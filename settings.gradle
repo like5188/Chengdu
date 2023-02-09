@@ -1,0 +1,2 @@
+rootProject.name='Chengdu'
+include ':app', ':socket', ':h5', ':call'
