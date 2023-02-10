@@ -14,8 +14,6 @@ class NettyClient(host: String, port: Int) {
     private val bootstrap: Bootstrap by lazy {
         Bootstrap()
     }
-
-    //配置客户端的线程组，客户端只有一个线程组
     private val eventLoopGroup: EventLoopGroup by lazy {
         NioEventLoopGroup()
     }
@@ -29,6 +27,7 @@ class NettyClient(host: String, port: Int) {
             }
         }
     }
+    private var isManuallyClose = false
 
     init {
         bootstrap.group(eventLoopGroup)
@@ -39,14 +38,18 @@ class NettyClient(host: String, port: Int) {
             .handler(channelInitializer)
     }
 
+    @Synchronized
     fun connect() {
+        if (isManuallyClose) {
+            return
+        }
         println("尝试连接服务器...")
         //异步连接服务器端
         val cf: ChannelFuture = bootstrap.connect()
         cf.addListener(ChannelFutureListener { future ->
             if (!future.isSuccess) {
                 println("服务端连接失败！")
-                // 延迟重新执行连接
+                // 延迟重连
                 future.channel().eventLoop().schedule({
                     connect()
                 }, 3, TimeUnit.SECONDS)
@@ -54,8 +57,12 @@ class NettyClient(host: String, port: Int) {
                 println("服务端连接成功！")
             }
         })
-        //同步等待客户端链路关闭
-        cf.channel().closeFuture().sync()
+    }
+
+    @Synchronized
+    fun disConnect() {
+        isManuallyClose = true
+        eventLoopGroup.shutdownGracefully()
     }
 
 }

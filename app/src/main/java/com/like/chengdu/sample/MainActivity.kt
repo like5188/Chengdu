@@ -19,4 +19,9 @@ class MainActivity : AppCompatActivity() {
         nettyClient.connect()
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        nettyClient.disConnect()
+    }
+
 }
