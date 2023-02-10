@@ -34,14 +34,14 @@ class NettyClient(
             }
         }
     }
-    private var connectStatus = -1
+    private var connectFlag = -1
 
     @Synchronized
     fun connect() {
-        if (connectStatus == 0) {
+        if (connectFlag == 0) {
             return
         }
-        connectStatus = 0// 允许自动重连
+        connectFlag = 0// 允许自动重连
         bootstrap = Bootstrap()
         eventLoopGroup = NioEventLoopGroup()
         bootstrap.group(eventLoopGroup)
@@ -54,7 +54,7 @@ class NettyClient(
     }
 
     internal fun reConnect() {
-        if (connectStatus != 0) {
+        if (connectFlag != 0) {
             return
         }
         println("尝试连接服务器...")
@@ -75,8 +75,8 @@ class NettyClient(
 
     @Synchronized
     fun disconnect() {
-        if (connectStatus == 0 && ::eventLoopGroup.isInitialized) {
-            connectStatus = 1// 断开连接后，不允许自动重连
+        if (connectFlag == 0 && ::eventLoopGroup.isInitialized) {
+            connectFlag = 1// 断开连接后，不允许自动重连
             eventLoopGroup.shutdownGracefully()
         }
     }
