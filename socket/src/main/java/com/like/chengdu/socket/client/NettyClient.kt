@@ -10,7 +10,13 @@ import java.util.concurrent.TimeUnit
 /**
  * 实现了重连的客户端
  */
-class NettyClient(host: String, port: Int) {
+class NettyClient(
+    host: String,
+    port: Int,
+    connectTimeoutMillis: Int = 10000,
+    private val reconnectIntervalMillis: Long = 3000,
+    val onMessageReceived: (String) -> Unit
+) {
     private val bootstrap: Bootstrap by lazy {
         Bootstrap()
     }
@@ -34,7 +40,7 @@ class NettyClient(host: String, port: Int) {
             .channel(NioSocketChannel::class.java)
             .remoteAddress(host, port)
             .option(ChannelOption.TCP_NODELAY, true)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
             .handler(channelInitializer)
     }
 
@@ -52,7 +58,7 @@ class NettyClient(host: String, port: Int) {
                 // 延迟重连
                 future.channel().eventLoop().schedule({
                     connect()
-                }, 3, TimeUnit.SECONDS)
+                }, reconnectIntervalMillis, TimeUnit.MILLISECONDS)
             } else {
                 println("服务端连接成功！")
             }

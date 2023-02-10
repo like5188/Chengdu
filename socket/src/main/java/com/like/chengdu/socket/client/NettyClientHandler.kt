@@ -26,8 +26,8 @@ class NettyClientHandler(private val nettyClient: NettyClient) : ChannelHandlerA
 
     //当通道有读取事件时会触发，即服务端发送数据给客户端
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-        val buf = msg as ByteBuf
-        println("收到服务端(${ctx.channel().remoteAddress()})的消息:" + buf.toString(CharsetUtil.UTF_8))
+        val str = (msg as ByteBuf).toString(CharsetUtil.UTF_8)
+        nettyClient.onMessageReceived.invoke(str)
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
