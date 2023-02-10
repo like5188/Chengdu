@@ -41,7 +41,7 @@ class NettyClient(
         if (connectStatus == 0) {
             return
         }
-        connectStatus = 0
+        connectStatus = 0// 允许自动重连
         bootstrap = Bootstrap()
         eventLoopGroup = NioEventLoopGroup()
         bootstrap.group(eventLoopGroup)
@@ -50,10 +50,10 @@ class NettyClient(
             .option(ChannelOption.TCP_NODELAY, true)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
             .handler(channelInitializer)
-        doConnect()
+        reConnect()
     }
 
-    internal fun doConnect() {
+    internal fun reConnect() {
         if (connectStatus != 0) {
             return
         }
@@ -63,9 +63,9 @@ class NettyClient(
         cf.addListener(ChannelFutureListener { future ->
             if (!future.isSuccess) {
                 println("服务端连接失败！")
-                // 延迟重连
+                // 延迟自动重连
                 future.channel().eventLoop().schedule({
-                    connect()
+                    reConnect()
                 }, reconnectIntervalMillis, TimeUnit.MILLISECONDS)
             } else {
                 println("服务端连接成功！")
@@ -76,7 +76,7 @@ class NettyClient(
     @Synchronized
     fun disconnect() {
         if (connectStatus == 0 && ::eventLoopGroup.isInitialized) {
-            connectStatus = 1
+            connectStatus = 1// 断开连接后，不允许自动重连
             eventLoopGroup.shutdownGracefully()
         }
     }
