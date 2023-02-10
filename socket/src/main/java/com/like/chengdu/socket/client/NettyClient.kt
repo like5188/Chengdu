@@ -36,7 +36,6 @@ class NettyClient(host: String, port: Int) {
             .remoteAddress(host, port)
             .option(ChannelOption.TCP_NODELAY, true)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-            .option(ChannelOption.SO_KEEPALIVE, true)
             .handler(channelInitializer)
     }
 
