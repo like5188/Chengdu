@@ -7,7 +7,7 @@ import com.like.chengdu.socket.client.NettyClient
 
 class MainActivity : AppCompatActivity() {
     private val nettyClient by lazy {
-        NettyClient("192.168.31.112", 9999)
+        NettyClient("192.168.31.112", 60000)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
