@@ -8,7 +8,13 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import java.util.concurrent.TimeUnit
 
 /**
- * 实现了重连的客户端
+ * Netty客户端
+ *
+ * @param host                      服务器地址
+ * @param port                      服务器端口
+ * @param connectTimeoutMillis      连接超时时长
+ * @param reconnectIntervalMillis   两次自动重连之间时间间隔
+ * @param onMessageReceived         接收到了服务器发来的消息的回调
  */
 class NettyClient(
     private val host: String,
@@ -21,7 +27,6 @@ class NettyClient(
     private lateinit var eventLoopGroup: EventLoopGroup
     private val channelInitializer: ChannelInitializer<SocketChannel> by lazy {
         object : ChannelInitializer<SocketChannel>() {
-            @Throws(Exception::class)
             override fun initChannel(ch: SocketChannel) {
                 with(ch.pipeline()) {
                     addLast(NettyClientHandler(this@NettyClient))
