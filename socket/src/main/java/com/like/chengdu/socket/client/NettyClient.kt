@@ -11,18 +11,14 @@ import java.util.concurrent.TimeUnit
  * 实现了重连的客户端
  */
 class NettyClient(
-    host: String,
-    port: Int,
-    connectTimeoutMillis: Int = 10000,
+    private val host: String,
+    private val port: Int,
+    private val connectTimeoutMillis: Int = 10000,
     private val reconnectIntervalMillis: Long = 3000,
     val onMessageReceived: (String) -> Unit
 ) {
-    private val bootstrap: Bootstrap by lazy {
-        Bootstrap()
-    }
-    private val eventLoopGroup: EventLoopGroup by lazy {
-        NioEventLoopGroup()
-    }
+    private lateinit var bootstrap: Bootstrap
+    private lateinit var eventLoopGroup: EventLoopGroup
     private val channelInitializer: ChannelInitializer<SocketChannel> by lazy {
         object : ChannelInitializer<SocketChannel>() {
             @Throws(Exception::class)
@@ -33,20 +29,27 @@ class NettyClient(
             }
         }
     }
-    private var isManuallyClose = false
+    private var connectStatus = -1
 
-    init {
+    @Synchronized
+    fun connect() {
+        if (connectStatus == 0) {
+            return
+        }
+        connectStatus = 0
+        bootstrap = Bootstrap()
+        eventLoopGroup = NioEventLoopGroup()
         bootstrap.group(eventLoopGroup)
             .channel(NioSocketChannel::class.java)
             .remoteAddress(host, port)
             .option(ChannelOption.TCP_NODELAY, true)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
             .handler(channelInitializer)
+        doConnect()
     }
 
-    @Synchronized
-    fun connect() {
-        if (isManuallyClose) {
+    internal fun doConnect() {
+        if (connectStatus != 0) {
             return
         }
         println("尝试连接服务器...")
@@ -66,9 +69,11 @@ class NettyClient(
     }
 
     @Synchronized
-    fun disConnect() {
-        isManuallyClose = true
-        eventLoopGroup.shutdownGracefully()
+    fun disconnect() {
+        if (connectStatus == 0 && ::eventLoopGroup.isInitialized) {
+            connectStatus = 1
+            eventLoopGroup.shutdownGracefully()
+        }
     }
 
 }

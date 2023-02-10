@@ -17,13 +17,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 
-    fun startSocketClient(view: View) {
+    fun connect(view: View) {
         nettyClient.connect()
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        nettyClient.disConnect()
+    fun disconnect(view: View) {
+        nettyClient.disconnect()
     }
 
 }
