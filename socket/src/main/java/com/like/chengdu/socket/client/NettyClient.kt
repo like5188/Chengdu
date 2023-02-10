@@ -17,6 +17,8 @@ class NettyClient(private val host: String, private val port: Int) {
     private val bootstrap: Bootstrap by lazy {
         Bootstrap()
     }
+
+    //配置客户端的线程组，客户端只有一个线程组
     private val eventLoopGroup: EventLoopGroup by lazy {
         NioEventLoopGroup()
     }
@@ -39,7 +41,7 @@ class NettyClient(private val host: String, private val port: Int) {
 
     fun connect() {
         println("尝试连接服务器...")
-        //连接服务器端
+        //异步连接服务器端
         val cf: ChannelFuture = bootstrap.connect(host, port)
         cf.addListener(ChannelFutureListener { future ->
             if (!future.isSuccess) {
@@ -52,7 +54,7 @@ class NettyClient(private val host: String, private val port: Int) {
                 println("服务端连接成功！")
             }
         })
-        //对通道关闭进行监听
+        //同步等待客户端链路关闭
         cf.channel().closeFuture().sync()
     }
 
