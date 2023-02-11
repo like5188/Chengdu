@@ -3,6 +3,9 @@ package com.like.chengdu.call
 import android.database.Cursor
 import android.provider.CallLog
 
+/**
+ * 通话记录
+ */
 data class CallRecord(
     val name: String?,
     val number: String?,//号码
