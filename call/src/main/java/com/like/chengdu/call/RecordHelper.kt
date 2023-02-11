@@ -9,6 +9,8 @@ import com.like.chengdu.call.RomUtils.isOppo
 import com.like.chengdu.call.RomUtils.isSamsung
 import com.like.chengdu.call.RomUtils.isVivo
 import com.like.chengdu.call.RomUtils.isXiaomi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -72,7 +74,7 @@ class RecordHelper(context: Context) {
             return list
         }
 
-    fun getLatestRecordFile(): File? {
+    suspend fun getLatestRecordFile(): File? = withContext(Dispatchers.IO) {
         try {
             val time: Long = Calendar.getInstance().timeInMillis
             var dir: File
@@ -83,7 +85,7 @@ class RecordHelper(context: Context) {
                 //直接使用已存储文件夹下搜索
                 val file = searchRecordFile(time, File(recordDir))
                 if (file != null) {
-                    return file
+                    return@withContext file
                 }
             }
             //使用指定系统下的系统录音文件路径搜索
@@ -91,7 +93,7 @@ class RecordHelper(context: Context) {
             if (recordDir.isNotEmpty()) {
                 val file = searchRecordFile(time, File(recordDir))
                 if (file != null) {
-                    return file
+                    return@withContext file
                 }
             }
             //使用其它常用的系统录音文件路径搜索
@@ -100,7 +102,7 @@ class RecordHelper(context: Context) {
                 dir = File(it)
                 val file = searchRecordFile(time, dir)
                 if (file != null) {
-                    return file
+                    return@withContext file
                 }
             }
             //全局搜索录音文件夹并存储下来
@@ -108,11 +110,11 @@ class RecordHelper(context: Context) {
 
             val time2: Long = Calendar.getInstance().timeInMillis
             Log.e("TAG", "全局搜索录音文件夹所花时间:${time2 - time} 当前时间:${SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Date(time2))}")
-            return file
+            return@withContext file
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return null
+        null
     }
 
     /**

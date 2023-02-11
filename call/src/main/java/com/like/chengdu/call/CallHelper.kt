@@ -2,9 +2,12 @@ package com.like.chengdu.call
 
 import android.content.Context
 import android.provider.CallLog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object CallHelper {
-    fun getCallRecord(context: Context, num: Int): List<CallRecord> {
+
+    suspend fun getCallRecord(context: Context, num: Int): List<CallRecord> = withContext(Dispatchers.IO) {
         var i = 0
         val result = mutableListOf<CallRecord>()
         context.contentResolver.query(
@@ -19,7 +22,7 @@ object CallHelper {
                 i++
             }
         }
-        return result
+        result
     }
 
 }

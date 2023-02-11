@@ -49,7 +49,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getRecord(view: View) {
-        Logger.d(recordHelper.getLatestRecordFile())
+        lifecycleScope.launch {
+            Logger.d(recordHelper.getLatestRecordFile())
+        }
     }
 
 }
