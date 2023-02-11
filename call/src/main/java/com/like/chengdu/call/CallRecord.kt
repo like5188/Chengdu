@@ -5,10 +5,10 @@ import android.provider.CallLog
 
 data class CallRecord(
     val name: String?,
-    val number: String?,
-    val type: Int?,
-    val date: Long?,
-    val duration: Int?,
+    val number: String?,//号码
+    val type: Int?,//通话类型 CallLog.Calls.INCOMING_TYPE - INCOMING_TYPE.ANSWERED_EXTERNALLY_TYPE
+    val date: Long?,//创建时间点
+    val duration: Int?,//通话时长
 ) {
     companion object {
         fun getProjection() = arrayOf(
