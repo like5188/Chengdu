@@ -28,29 +28,34 @@ class RecordHelper(context: Context) {
     private val systemRecordPath: String
         get() {
             val parent = Environment.getExternalStorageDirectory()
-            var child: File
-            if (isHuawei) {
-                child = File(parent, "record")
-                if (!child.exists()) {
-                    child = File(parent, "Sounds/CallRecord")
+            var child: File? = null
+            when {
+                isHuawei -> {
+                    child = File(parent, "record")
+                    if (!child.exists()) {
+                        child = File(parent, "Sounds/CallRecord")
+                    }
                 }
-            } else if (isXiaomi) {
-                child = File(parent, "MIUI/sound_recorder/call_rec")
-            } else if (isMeizu) {
-                child = File(parent, "Recorder")
-            } else if (isOppo) {
-                child = File(parent, "Recordings/Call Recordings")
-                if (!child.exists()) {
-                    child = File(parent, "Recordings")
+                isXiaomi -> {
+                    child = File(parent, "MIUI/sound_recorder/call_rec")
                 }
-            } else if (isVivo) {
-                child = File(parent, "Record/Call")
-            } else if (isSamsung) {
-                child = File(parent, "Sounds")
-            } else {
-                child = File(parent, "")
+                isMeizu -> {
+                    child = File(parent, "Recorder")
+                }
+                isOppo -> {
+                    child = File(parent, "Recordings/Call Recordings")
+                    if (!child.exists()) {
+                        child = File(parent, "Recordings")
+                    }
+                }
+                isVivo -> {
+                    child = File(parent, "Record/Call")
+                }
+                isSamsung -> {
+                    child = File(parent, "Sounds")
+                }
             }
-            return if (!child.exists()) {
+            return if (child == null || !child.exists()) {
                 ""
             } else child.absolutePath
         }
@@ -69,8 +74,7 @@ class RecordHelper(context: Context) {
             if (file.exists()) {
                 list.add(file.absolutePath)
             }
-
-            // 或者其余机型系统录音文件夹 添加
+            // todo 添加其它系统录音文件夹
             return list
         }
 
