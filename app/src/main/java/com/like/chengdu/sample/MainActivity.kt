@@ -50,6 +50,13 @@ class MainActivity : AppCompatActivity() {
 
     fun getRecord(view: View) {
         lifecycleScope.launch {
+            val requestMultiplePermissions = requestMultiplePermissions(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            ).all { it.value }
+            if (!requestMultiplePermissions) {
+                return@launch
+            }
             Logger.d(recordHelper.getLatestRecordFile())
         }
     }
