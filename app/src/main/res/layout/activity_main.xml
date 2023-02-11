@@ -25,4 +25,11 @@
         android:text="获取通话记录"
         android:textAllCaps="false" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="getRecord"
+        android:text="获取最新的录音文件"
+        android:textAllCaps="false" />
+
 </LinearLayout>

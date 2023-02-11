@@ -6,6 +6,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.like.chengdu.call.CallHelper
+import com.like.chengdu.call.RecordHelper
 import com.like.chengdu.socket.client.NettyClient
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
@@ -16,6 +17,9 @@ class MainActivity : AppCompatActivity() {
         NettyClient("192.168.31.112", 60000) {
             println("收到服务端的消息:$it")
         }
+    }
+    private val recordHelper by lazy {
+        RecordHelper(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +46,10 @@ class MainActivity : AppCompatActivity() {
             }
             Logger.printCollection(CallHelper.getCallRecord(this@MainActivity, 10))
         }
+    }
+
+    fun getRecord(view: View) {
+        Logger.d(recordHelper.getLatestRecordFile())
     }
 
 }
