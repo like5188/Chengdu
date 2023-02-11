@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.like.chengdu.call.CallHelper
 import com.like.chengdu.socket.client.NettyClient
+import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
 import kotlinx.coroutines.launch
 
@@ -39,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            CallHelper.getCallRecord(this@MainActivity, 10)
+            Logger.printCollection(CallHelper.getCallRecord(this@MainActivity, 10))
         }
     }
 
