@@ -32,4 +32,11 @@
         android:text="获取最新的录音文件"
         android:textAllCaps="false" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="phoneState"
+        android:text="监听通话状态"
+        android:textAllCaps="false" />
+
 </LinearLayout>

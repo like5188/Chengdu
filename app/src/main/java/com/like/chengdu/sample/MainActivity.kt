@@ -6,11 +6,13 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.like.chengdu.call.CallHelper
+import com.like.chengdu.call.PhoneReceiver
 import com.like.chengdu.call.RecordHelper
 import com.like.chengdu.socket.client.NettyClient
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
 import kotlinx.coroutines.launch
+
 
 class MainActivity : AppCompatActivity() {
     private val nettyClient by lazy {
@@ -58,6 +60,19 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
             Logger.d(recordHelper.getLatestRecordFile())
+        }
+    }
+
+    fun phoneState(view: View) {
+        lifecycleScope.launch {
+            val requestMultiplePermissions = requestMultiplePermissions(
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.PROCESS_OUTGOING_CALLS,
+            ).all { it.value }
+            if (!requestMultiplePermissions) {
+                return@launch
+            }
+            PhoneReceiver.listen(this@MainActivity)
         }
     }
 
