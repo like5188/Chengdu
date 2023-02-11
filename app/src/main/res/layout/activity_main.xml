@@ -8,14 +8,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="connect"
-        android:text="连接服务器"
+        android:text="连接socket服务器"
         android:textAllCaps="false" />
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="disconnect"
-        android:text="断开服务器"
+        android:text="断开socket服务器"
+        android:textAllCaps="false" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="getCallRecord"
+        android:text="获取通话记录"
         android:textAllCaps="false" />
 
 </LinearLayout>
