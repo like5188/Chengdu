@@ -46,7 +46,7 @@ class PhoneReceiver : BroadcastReceiver() {
                     Log.e("TAG", "空闲")
                 }
                 TelephonyManager.CALL_STATE_OFFHOOK -> {
-                    Log.e("TAG", "接听");
+                    Log.e("TAG", "接听")
                 }
                 TelephonyManager.CALL_STATE_RINGING -> {
                     Log.e("TAG", "响铃")
