@@ -84,7 +84,7 @@ class RecordHelper(context: Context) {
             var dir: File
             //使用记录下的文件夹下搜索
             var recordDir = SPUtils.getInstance().get(record_dir_key, "")
-            Log.e("TAG", "sp是否有缓存文件:$recordDir 当前时间:${SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Date(time))}")
+            Log.e("RecordHelper", "sp是否有缓存文件:$recordDir 当前时间:${SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Date(time))}")
             if (recordDir.isNotEmpty()) {
                 //直接使用已存储文件夹下搜索
                 val file = searchRecordFile(time, File(recordDir))
@@ -113,7 +113,7 @@ class RecordHelper(context: Context) {
             val file = searchRecordFile(time, Environment.getExternalStorageDirectory(), true)
 
             val time2: Long = Calendar.getInstance().timeInMillis
-            Log.e("TAG", "全局搜索录音文件夹所花时间:${time2 - time} 当前时间:${SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Date(time2))}")
+            Log.e("RecordHelper", "全局搜索录音文件夹所花时间:${time2 - time} 当前时间:${SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Date(time2))}")
             return@withContext file
         } catch (e: Exception) {
             e.printStackTrace()

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Environment
 import android.text.TextUtils
+import android.util.Log
 import java.io.*
 import java.util.*
 
@@ -149,7 +150,9 @@ object RomUtils {
                 version = getRomVersion("")
             }
         }
-        RomInfo(name, version)
+        RomInfo(name, version).apply {
+            Log.d("RomUtils", this.toString())
+        }
     }
 
     val isHuawei: Boolean = ROM_HUAWEI[0] == romInfo.name
