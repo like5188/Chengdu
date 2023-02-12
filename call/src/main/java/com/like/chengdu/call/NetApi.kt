@@ -5,10 +5,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 
 /**
  * 网络接口
  */
+@Suppress("BlockingMethodInNonBlockingContext")
 object NetApi {
     private val mOkHttpClient: OkHttpClient by lazy {
         OkHttpClient().newBuilder().build()
@@ -28,7 +31,6 @@ object NetApi {
         }
         return ScanCallRecordConfig("/Music/Recordings/Call Recordings/", 3, "yyMMddHHmm", "-", ".amr", 1)
 
-        @Suppress("BlockingMethodInNonBlockingContext")
         return withContext(Dispatchers.IO) {
             try {
                 val body: MultipartBody = MultipartBody.Builder()
@@ -53,4 +55,28 @@ object NetApi {
         }
     }
 
+    /**
+     * 上传文件
+     *
+     * @param url   上传路径
+     * @param file  需要上传的文件
+     * @return 上传成功返回true，失败返回false
+     */
+    suspend fun uploadFile(url: String?, file: File?): Boolean {
+        if (url.isNullOrEmpty() || file == null || !file.exists() || file.isDirectory || file.length() <= 0) {
+            return false
+        }
+        return withContext(Dispatchers.IO) {
+            try {
+                val data = file.readBytes()
+                val requestBody: RequestBody = data.toRequestBody(null, 0, data.size)
+                val request: Request = Request.Builder().url(url).method("PUT", requestBody).build()
+                val response: Response = mOkHttpClient.newCall(request).execute()
+                response.isSuccessful
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
+    }
 }
