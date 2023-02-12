@@ -10,17 +10,17 @@ import kotlinx.coroutines.withContext
  */
 object CallUtils {
 
-    suspend fun getCallRecord(context: Context, num: Int): List<CallRecord> = withContext(Dispatchers.IO) {
+    suspend fun getCallRecord(context: Context, num: Int): List<Call> = withContext(Dispatchers.IO) {
         var i = 0
-        val result = mutableListOf<CallRecord>()
+        val result = mutableListOf<Call>()
         context.contentResolver.query(
-            CallLog.Calls.CONTENT_URI, CallRecord.getProjection(), null, null, CallLog.Calls.DEFAULT_SORT_ORDER
+            CallLog.Calls.CONTENT_URI, Call.getProjection(), null, null, CallLog.Calls.DEFAULT_SORT_ORDER
         )?.use {
             if (!it.moveToFirst()) {
                 return@use
             }
             while (!it.isAfterLast && i < num) {
-                result.add(CallRecord.parse(it))
+                result.add(Call.parse(it))
                 it.moveToNext()
                 i++
             }

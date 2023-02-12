@@ -6,7 +6,7 @@ import android.provider.CallLog
 /**
  * 通话记录
  */
-data class CallRecord(
+data class Call(
     val name: String?,
     val number: String?,//号码
     val type: Int?,//通话类型 CallLog.Calls.INCOMING_TYPE - INCOMING_TYPE.ANSWERED_EXTERNALLY_TYPE
@@ -22,13 +22,13 @@ data class CallRecord(
             CallLog.Calls.DURATION
         )
 
-        fun parse(cursor: Cursor): CallRecord {
+        fun parse(cursor: Cursor): Call {
             val nameColumnIndex = cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)
             val numberColumnIndex = cursor.getColumnIndex(CallLog.Calls.NUMBER)
             val typeColumnIndex = cursor.getColumnIndex(CallLog.Calls.TYPE)
             val dateColumnIndex = cursor.getColumnIndex(CallLog.Calls.DATE)
             val durationColumnIndex = cursor.getColumnIndex(CallLog.Calls.DURATION)
-            return CallRecord(
+            return Call(
                 if (nameColumnIndex == -1) null else cursor.getString(nameColumnIndex),
                 if (numberColumnIndex == -1) null else cursor.getString(numberColumnIndex),
                 if (typeColumnIndex == -1) null else cursor.getInt(typeColumnIndex),
