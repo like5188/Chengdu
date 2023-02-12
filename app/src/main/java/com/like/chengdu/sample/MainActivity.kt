@@ -78,7 +78,7 @@ class MainActivity : AppCompatActivity() {
 
     fun getScanCallRecordConfig(view: View) {
         lifecycleScope.launch {
-            Logger.i(Api.getScanCallRecordConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version))
+            Logger.i(NetApi.getScanCallRecordConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version))
         }
     }
 

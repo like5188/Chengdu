@@ -6,11 +6,10 @@ import kotlinx.coroutines.withContext
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 
-
 /**
- * 上传文件工具类
+ * 网络接口
  */
-object Api {
+object NetApi {
     private val mOkHttpClient: OkHttpClient by lazy {
         OkHttpClient().newBuilder().build()
     }
