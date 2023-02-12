@@ -20,7 +20,7 @@ object CallRecordingUtils {
                 return@withContext null
             }
             dir.listFiles()?.firstOrNull {
-                isCallRecordingFile(it, config)
+                isValidFile(it) && isCallRecordingFile(it, config)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -28,13 +28,12 @@ object CallRecordingUtils {
         }
     }
 
-    private fun isCallRecordingFile(file: File?, config: ScanCallRecordConfig): Boolean {
-        return file != null &&
-                file.isFile &&
-                file.exists() &&
-                file.length() > 0 &&
-                file.name.lowercase(Locale.getDefault()).endsWith(config.fileSuffix) &&
-                file.lastModified() - time > -20 * 1000
+    private fun isValidFile(file: File?): Boolean =
+        file != null && file.isFile && file.exists() && file.length() > 0
+
+    private fun isCallRecordingFile(file: File, config: ScanCallRecordConfig): Boolean {
+        return file.name.lowercase(Locale.getDefault()).endsWith(config.fileSuffix) &&
+                System.currentTimeMillis() - file.lastModified() > config.modifyTimeError * 1000
     }
 
 }

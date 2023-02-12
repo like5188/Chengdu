@@ -9,5 +9,5 @@ data class ScanCallRecordConfig(
     val fileNameTimeFormat: String,// 如果文件名包含时间，需要指定这个时间格式
     val fileNameSeparator: String,// 如果文件名是组合方式（scanType = 3、4），需要指定这个分隔符
     val fileSuffix: String,// 通话录音文件后缀
-    val scanTimeError: Int,// 扫描时间误差值。秒
+    val modifyTimeError: Int,// 修改时间误差值。秒
 )
