@@ -5,10 +5,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.like.chengdu.call.AudioUtils
-import com.like.chengdu.call.CallUtils
-import com.like.chengdu.call.PhoneReceiver
-import com.like.chengdu.call.CallRecordUtils
+import com.like.chengdu.call.*
 import com.like.chengdu.socket.client.NettyClient
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
@@ -76,6 +73,12 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
             PhoneReceiver.listen(this@MainActivity)
+        }
+    }
+
+    fun getScanCallRecordConfig(view: View) {
+        lifecycleScope.launch {
+            Logger.i(OkHttpUtils.post("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version))
         }
     }
 

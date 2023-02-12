@@ -58,7 +58,7 @@ object RomUtils {
             }
             return UNKNOWN
         }
-    private val romInfo: RomInfo by lazy {
+    val romInfo: RomInfo by lazy {
         var name = ""
         var version = ""
         val brand = brand
