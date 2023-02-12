@@ -18,9 +18,6 @@ class MainActivity : AppCompatActivity() {
             println("收到服务端的消息:$it")
         }
     }
-    private val callRecordUtils by lazy {
-        CallRecordUtils(this)
-    }
     private val audioUtils by lazy {
         AudioUtils()
     }
@@ -60,7 +57,8 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            Logger.d(callRecordUtils.getLatestCallRecordFile())
+            val config = NetApi.getScanCallRecordConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version, Build.VERSION.SDK_INT)
+            Logger.d(CallRecordingUtils.getCallRecordingFile(config))
         }
     }
 
@@ -74,12 +72,6 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
             PhoneReceiver.listen(this@MainActivity)
-        }
-    }
-
-    fun getScanCallRecordConfig(view: View) {
-        lifecycleScope.launch {
-            Logger.i(NetApi.getScanCallRecordConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version, Build.VERSION.SDK_INT))
         }
     }
 
