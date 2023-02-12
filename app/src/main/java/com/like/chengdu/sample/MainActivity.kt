@@ -1,18 +1,17 @@
 package com.like.chengdu.sample
 
 import android.Manifest
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.like.chengdu.call.AudioPlayer
 import com.like.chengdu.call.CallHelper
 import com.like.chengdu.call.PhoneReceiver
 import com.like.chengdu.call.RecordHelper
 import com.like.chengdu.socket.client.NettyClient
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -24,8 +23,8 @@ class MainActivity : AppCompatActivity() {
     private val recordHelper by lazy {
         RecordHelper(this)
     }
-    private val mediaPlayer by lazy {
-        MediaPlayer()
+    private val audioPlayer by lazy {
+        AudioPlayer()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,31 +79,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun play(view: View) {
-        if (!mediaPlayer.isPlaying) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    mediaPlayer.reset()
-                    mediaPlayer.setDataSource("http://www.ytmp3.cn/down/57799.mp3")
-                    mediaPlayer.prepare()
-                    mediaPlayer.start()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
+    private var i = 0
+    fun start(view: View) {
+        if (i++ == 0) {
+            audioPlayer.start("http://www.ytmp3.cn/down/57799.mp3")
+        } else {
+            audioPlayer.start("http://www.ytmp3.cn/down/57790.mp3")
         }
     }
 
     fun pause(view: View) {
-        if (mediaPlayer.isPlaying) {
-            mediaPlayer.pause()
-        }
+        audioPlayer.pause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mediaPlayer.stop()
-        mediaPlayer.release()
+        audioPlayer.destroy()
     }
 
 }
