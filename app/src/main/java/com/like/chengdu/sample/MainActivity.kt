@@ -8,7 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.like.chengdu.call.AudioUtils
 import com.like.chengdu.call.CallUtils
 import com.like.chengdu.call.PhoneReceiver
-import com.like.chengdu.call.RecordUtils
+import com.like.chengdu.call.CallRecordUtils
 import com.like.chengdu.socket.client.NettyClient
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
@@ -20,8 +20,8 @@ class MainActivity : AppCompatActivity() {
             println("收到服务端的消息:$it")
         }
     }
-    private val recordUtils by lazy {
-        RecordUtils(this)
+    private val callRecordUtils by lazy {
+        CallRecordUtils(this)
     }
     private val audioUtils by lazy {
         AudioUtils()
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            Logger.d(recordUtils.getLatestRecordFile())
+            Logger.d(callRecordUtils.getLatestCallRecordFile())
         }
     }
 
