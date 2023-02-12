@@ -1,6 +1,7 @@
 package com.like.chengdu.sample
 
 import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -78,7 +79,7 @@ class MainActivity : AppCompatActivity() {
 
     fun getScanCallRecordConfig(view: View) {
         lifecycleScope.launch {
-            Logger.i(NetApi.getScanCallRecordConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version))
+            Logger.i(NetApi.getScanCallRecordConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version, Build.VERSION.SDK_INT))
         }
     }
 

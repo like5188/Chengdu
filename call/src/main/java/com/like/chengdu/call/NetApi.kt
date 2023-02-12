@@ -20,12 +20,13 @@ object NetApi {
     /**
      * 获取扫描录音文件的配置
      *
-     * @param name      手机系统名称
-     * @param version   手机系统版本
+     * @param romName           手机系统名称
+     * @param romVersion        手机系统版本
+     * @param sdkVersion        Android Sdk 版本
      *
      * @return 上传成功返回true，失败返回false
      */
-    suspend fun getScanCallRecordConfig(url: String?, name: String, version: String): ScanCallRecordConfig? {
+    suspend fun getScanCallRecordConfig(url: String?, romName: String, romVersion: String, sdkVersion: Int): ScanCallRecordConfig? {
         if (url.isNullOrEmpty()) {
             return null
         }
@@ -35,8 +36,9 @@ object NetApi {
             try {
                 val body: MultipartBody = MultipartBody.Builder()
                     .setType("multipart/form-data".toMediaType())
-                    .addFormDataPart("name", name)
-                    .addFormDataPart("version", version)
+                    .addFormDataPart("romName", romName)
+                    .addFormDataPart("romVersion", romVersion)
+                    .addFormDataPart("sdkVersion", sdkVersion.toString())
                     .build()
                 val request: Request = Request.Builder()
                     .post(body)
