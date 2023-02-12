@@ -5,10 +5,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.like.chengdu.call.AudioPlayer
-import com.like.chengdu.call.CallHelper
+import com.like.chengdu.call.AudioUtils
+import com.like.chengdu.call.CallUtils
 import com.like.chengdu.call.PhoneReceiver
-import com.like.chengdu.call.RecordHelper
+import com.like.chengdu.call.RecordUtils
 import com.like.chengdu.socket.client.NettyClient
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
@@ -20,11 +20,11 @@ class MainActivity : AppCompatActivity() {
             println("收到服务端的消息:$it")
         }
     }
-    private val recordHelper by lazy {
-        RecordHelper(this)
+    private val recordUtils by lazy {
+        RecordUtils(this)
     }
-    private val audioPlayer by lazy {
-        AudioPlayer()
+    private val audioUtils by lazy {
+        AudioUtils()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            Logger.printCollection(CallHelper.getCallRecord(this@MainActivity, 10))
+            Logger.printCollection(CallUtils.getCallRecord(this@MainActivity, 10))
         }
     }
 
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            Logger.d(recordHelper.getLatestRecordFile())
+            Logger.d(recordUtils.getLatestRecordFile())
         }
     }
 
@@ -82,19 +82,19 @@ class MainActivity : AppCompatActivity() {
     private var i = 0
     fun start(view: View) {
         if (i++ == 0) {
-            audioPlayer.start("http://www.ytmp3.cn/down/57799.mp3")
+            audioUtils.start("http://www.ytmp3.cn/down/57799.mp3")
         } else {
-            audioPlayer.start("http://www.ytmp3.cn/down/57790.mp3")
+            audioUtils.start("http://www.ytmp3.cn/down/57790.mp3")
         }
     }
 
     fun pause(view: View) {
-        audioPlayer.pause()
+        audioUtils.pause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        audioPlayer.destroy()
+        audioUtils.destroy()
     }
 
 }

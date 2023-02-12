@@ -8,6 +8,9 @@ import android.util.Log
 import java.io.*
 import java.util.*
 
+/**
+ * 手机系统工具类
+ */
 object RomUtils {
     private val ROM_HUAWEI = arrayOf("huawei")
     private val ROM_VIVO = arrayOf("vivo")

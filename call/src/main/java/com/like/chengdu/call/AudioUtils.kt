@@ -2,7 +2,10 @@ package com.like.chengdu.call
 
 import android.media.MediaPlayer
 
-class AudioPlayer {
+/**
+ * 音频工具类
+ */
+class AudioUtils {
     private val mediaPlayer by lazy {
         MediaPlayer()
     }

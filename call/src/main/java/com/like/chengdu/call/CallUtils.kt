@@ -5,7 +5,10 @@ import android.provider.CallLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-object CallHelper {
+/**
+ * 通话记录工具类
+ */
+object CallUtils {
 
     suspend fun getCallRecord(context: Context, num: Int): List<CallRecord> = withContext(Dispatchers.IO) {
         var i = 0

@@ -15,7 +15,10 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-class RecordHelper(context: Context) {
+/**
+ * 通话录音工具类
+ */
+class RecordUtils(context: Context) {
     companion object {
         private const val record_dir_key = "record_dir_key"
     }
