@@ -10,19 +10,20 @@ import okhttp3.MediaType.Companion.toMediaType
 /**
  * 上传文件工具类
  */
-object OkHttpUtils {
+object Api {
     private val mOkHttpClient: OkHttpClient by lazy {
         OkHttpClient().newBuilder().build()
     }
 
     /**
-     * 上传文件
+     * 获取扫描录音文件的配置
      *
-     * @param url   上传路径
-     * @param file  需要上传的文件
+     * @param name      手机系统名称
+     * @param version   手机系统版本
+     *
      * @return 上传成功返回true，失败返回false
      */
-    suspend fun post(url: String?, name: String, version: String): ScanCallRecordConfig? {
+    suspend fun getScanCallRecordConfig(url: String?, name: String, version: String): ScanCallRecordConfig? {
         if (url.isNullOrEmpty()) {
             return null
         }
