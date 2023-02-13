@@ -1,6 +1,7 @@
 package com.like.chengdu.sample
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -12,6 +13,7 @@ import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
 import kotlinx.coroutines.launch
 
+@SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity() {
     private val nettyClient by lazy {
         NettyClient("192.168.31.112", 60000) {
