@@ -1,5 +1,6 @@
 package com.like.chengdu.call
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Context.TELEPHONY_SERVICE
@@ -9,6 +10,7 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresPermission
 
 class PhoneReceiver : BroadcastReceiver() {
     private var curPhoneNumber = ""
@@ -26,6 +28,7 @@ class PhoneReceiver : BroadcastReceiver() {
     }
 
     companion object {
+        @RequiresPermission(allOf = [Manifest.permission.READ_PHONE_STATE, Manifest.permission.PROCESS_OUTGOING_CALLS])
         fun listen(context: Context) {
             val phoneReceiver = PhoneReceiver()
             val intentFilter = IntentFilter()
