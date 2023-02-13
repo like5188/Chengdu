@@ -1,16 +1,34 @@
 package com.like.chengdu.call
 
+import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.database.Cursor
+import android.net.Uri
 import android.provider.CallLog
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
 
 /**
  * 通话记录工具类
  */
 object CallUtils {
 
+    /**
+     * 拨打电话（直接拨打电话）
+     * @param phoneNumber 电话号码
+     */
+    @RequiresPermission(Manifest.permission.CALL_PHONE)
+    fun call(context: Context, phoneNumber: String) {
+        Intent(Intent.ACTION_CALL).apply {
+            data = Uri.parse("tel:$phoneNumber")
+            context.startActivity(this)
+        }
+    }
+
+    @RequiresPermission(allOf = [Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_CALL_LOG])
     suspend fun getCallRecord(context: Context, num: Int): List<Call> = withContext(Dispatchers.IO) {
         var i = 0
         val result = mutableListOf<Call>()

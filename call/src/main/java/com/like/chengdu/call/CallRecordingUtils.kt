@@ -1,6 +1,8 @@
 package com.like.chengdu.call
 
+import android.Manifest
 import android.os.Environment
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -11,6 +13,7 @@ import java.util.*
  */
 object CallRecordingUtils {
 
+    @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
     suspend fun getCallRecordingFile(config: ScanCallRecordConfig?): File? = withContext(Dispatchers.IO) {
         config ?: return@withContext null
         try {
