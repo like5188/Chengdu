@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            Logger.printCollection(CallUtils.getCallRecord(this@MainActivity, 10))
+            Logger.printCollection(CallUtils.getCalls(this@MainActivity, 10))
         }
     }
 

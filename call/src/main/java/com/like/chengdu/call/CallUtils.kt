@@ -29,7 +29,7 @@ object CallUtils {
     }
 
     @RequiresPermission(allOf = [Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_CALL_LOG])
-    suspend fun getCallRecord(context: Context, num: Int): List<Call> = withContext(Dispatchers.IO) {
+    suspend fun getCalls(context: Context, num: Int): List<Call> = withContext(Dispatchers.IO) {
         var i = 0
         val result = mutableListOf<Call>()
         context.contentResolver.query(
