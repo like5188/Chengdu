@@ -44,6 +44,8 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.PROCESS_OUTGOING_CALLS,
                 Manifest.permission.READ_CALL_LOG,
                 Manifest.permission.WRITE_CALL_LOG,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
             ).all { it.value }
             if (!requestMultiplePermissions) {
                 return@launch
