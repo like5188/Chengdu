@@ -13,8 +13,11 @@ import java.io.File
  */
 @Suppress("BlockingMethodInNonBlockingContext")
 object NetApi {
-    private val mOkHttpClient: OkHttpClient by lazy {
+    private val mOkHttpClient by lazy {
         OkHttpClient().newBuilder().build()
+    }
+    private val mGson by lazy {
+        Gson()
     }
 
     /**
@@ -23,8 +26,6 @@ object NetApi {
      * @param romName           手机系统名称
      * @param romVersion        手机系统版本
      * @param sdkVersion        Android Sdk 版本
-     *
-     * @return 上传成功返回true，失败返回false
      */
     suspend fun getScanCallRecordingConfig(
         url: String?,
@@ -52,7 +53,11 @@ object NetApi {
 
                 val response: Response = mOkHttpClient.newCall(request).execute()
                 if (response.isSuccessful) {
-                    Gson().fromJson(response.body?.string(), ScanCallRecordingConfig::class.java)
+                    val resultModel: ResultModel<ScanCallRecordingConfig> = mGson.fromJson(
+                        response.body?.string(),
+                        ResultModel::class.java
+                    ) as ResultModel<ScanCallRecordingConfig>
+                    resultModel.data
                 } else {
                     null
                 }
@@ -87,3 +92,5 @@ object NetApi {
         }
     }
 }
+
+class ResultModel<T>(val code: Int, val msg: String, val data: T?)

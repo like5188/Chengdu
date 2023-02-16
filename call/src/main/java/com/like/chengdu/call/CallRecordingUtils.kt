@@ -19,26 +19,43 @@ object CallRecordingUtils {
             config ?: return@withContext null
             try {
                 val parent = Environment.getExternalStorageDirectory()
-                val dir = File(parent, config.filePath)
-                if (!dir.exists() || !dir.isDirectory) {
-                    return@withContext null
-                }
-                dir.listFiles()?.sortedBy {
-                    it.lastModified()
-                }?.firstOrNull {
-                    isValidFile(it) && isValidCallRecordingFile(it, config)
+                val filePathList = config.getFilePathList()
+                val currentTimeMillis = System.currentTimeMillis()
+                filePathList.forEach { filePath ->
+                    val dir = File(parent, filePath)
+                    if (dir.exists() && dir.isDirectory) {
+                        val file = dir.listFiles()?.sortedBy {
+                            it.lastModified()
+                        }?.firstOrNull {
+                            isValidFile(it) && isValidCallRecordingFile(
+                                it,
+                                config,
+                                currentTimeMillis
+                            )
+                        }
+                        if (file != null) {
+                            return@withContext file
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                null
             }
+            null
         }
 
     private fun isValidFile(file: File?): Boolean = file != null && file.isFile && file.exists()
 
-    private fun isValidCallRecordingFile(file: File, config: ScanCallRecordingConfig): Boolean {
-        return file.name.lowercase(Locale.getDefault()).endsWith(config.fileSuffix) &&
-                System.currentTimeMillis() - file.lastModified() <= config.modifyTimeError
+    private fun isValidCallRecordingFile(
+        file: File,
+        config: ScanCallRecordingConfig,
+        currentTimeMillis: Long
+    ): Boolean {
+        val fileSuffixList = config.getFileSuffixList()
+        val modifyTimeError = config.getModifyTimeError()
+        val fileName = file.name.lowercase(Locale.getDefault())
+        return fileSuffixList.any { fileName.contains(it) } &&
+                currentTimeMillis - file.lastModified() <= modifyTimeError
     }
 
 }
@@ -47,7 +64,27 @@ object CallRecordingUtils {
  * 扫描通话录音文件的配置(由后台配置)
  */
 data class ScanCallRecordingConfig(
-    val filePath: String,// 通话录音文件路径。例如："/Music/Recordings/Call Recordings/"
-    val fileSuffix: String,// 通话录音文件后缀
-    val modifyTimeError: Int,// 修改时间误差值。毫秒
-)
+    private val filePaths: String?,// 通话录音文件路径。例如："/Music/Recordings/Call Recordings/"
+    private val fileSuffixes: String?,// 通话录音文件后缀
+    private val modifyTimeError: Long?,// 修改时间与扫描文件时间的误差值。毫秒
+) {
+    fun getFilePathList() =
+        filePaths?.split(",") ?: listOf(
+            "record",
+            "Sounds/CallRecord",
+            "MIUI/sound_recorder/call_rec",
+            "Recorder",
+            "Recordings/Call Recordings",
+            "Music/Recordings/Call Recordings",
+            "Recordings",
+            "Record/Call",
+            "Sounds",
+            "PhoneRecord",
+        )
+
+    fun getFileSuffixList() =
+        fileSuffixes?.split(",") ?: listOf(".mp3", ".wav", ".3gp", ".amr", ".3gpp")
+
+    fun getModifyTimeError() = modifyTimeError ?: 5000L
+
+}
