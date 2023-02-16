@@ -53,9 +53,43 @@ class MainActivity : AppCompatActivity() {
                 },
                 {
                     Logger.e("挂断")
+//                    lifecycleScope.launch {
+//                        // 获取通话记录
+//                        getCallRecord()
+//                        // 获取录音文件
+//                        getCallRecordingFile()
+//                    }
                 }
             )
         }
+    }
+
+    private suspend fun getCallRecord() {
+        val requestMultiplePermissions = requestMultiplePermissions(
+            Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.WRITE_CALL_LOG,
+        ).all { it.value }
+        if (!requestMultiplePermissions) {
+            return
+        }
+        Logger.printCollection(CallUtils.getCalls(this@MainActivity, 10))
+    }
+
+    private suspend fun getCallRecordingFile() {
+        val requestMultiplePermissions = requestMultiplePermissions(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        ).all { it.value }
+        if (!requestMultiplePermissions) {
+            return
+        }
+        val config = NetApi.getScanCallRecordingConfig(
+            "xxx",
+            RomUtils.romInfo.name,
+            RomUtils.romInfo.version,
+            Build.VERSION.SDK_INT
+        )
+        Logger.d(CallRecordingUtils.getLastModifiedCallRecordingFile(config))
     }
 
     fun call(view: View) {
@@ -67,38 +101,6 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
             CallUtils.call(this@MainActivity, "10000")
-        }
-    }
-
-    fun getCallRecord(view: View) {
-        lifecycleScope.launch {
-            val requestMultiplePermissions = requestMultiplePermissions(
-                Manifest.permission.READ_CALL_LOG,
-                Manifest.permission.WRITE_CALL_LOG,
-            ).all { it.value }
-            if (!requestMultiplePermissions) {
-                return@launch
-            }
-            Logger.printCollection(CallUtils.getCalls(this@MainActivity, 10))
-        }
-    }
-
-    fun getRecording(view: View) {
-        lifecycleScope.launch {
-            val requestMultiplePermissions = requestMultiplePermissions(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            ).all { it.value }
-            if (!requestMultiplePermissions) {
-                return@launch
-            }
-            val config = NetApi.getScanCallRecordingConfig(
-                "xxx",
-                RomUtils.romInfo.name,
-                RomUtils.romInfo.version,
-                Build.VERSION.SDK_INT
-            )
-            Logger.d(CallRecordingUtils.getLastModifiedCallRecordingFile(config))
         }
     }
 
