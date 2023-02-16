@@ -24,7 +24,7 @@ object CallRecordingUtils {
                 filePathList.forEach { filePath ->
                     val dir = File(parent, filePath)
                     if (dir.exists() && dir.isDirectory) {
-                        val file = dir.listFiles()?.sortedBy {
+                        val file = dir.listFiles()?.sortedByDescending {
                             it.lastModified()
                         }?.firstOrNull {
                             isValidFile(it) && isValidCallRecordingFile(
@@ -85,6 +85,6 @@ data class ScanCallRecordingConfig(
     fun getFileSuffixList() =
         fileSuffixes?.split(",") ?: listOf(".mp3", ".wav", ".3gp", ".amr", ".3gpp")
 
-    fun getModifyTimeError() = modifyTimeError ?: 5000L
+    fun getModifyTimeError() = modifyTimeError ?: 3000L
 
 }
