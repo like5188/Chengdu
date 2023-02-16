@@ -22,19 +22,31 @@ class MainActivity : AppCompatActivity() {
         DataBindingUtil.setContentView(this, R.layout.activity_main)
     }
     private val nettyClient by lazy {
-        NettyClient {
-            lifecycleScope.launch(Dispatchers.Main) {
-                val oldMsg = mBinding.tvMsg.text?.toString()
-                mBinding.tvMsg.text = if (oldMsg.isNullOrEmpty()) {
-                    it
-                } else {
-                    oldMsg + "\n" + it
-                }
+        NettyClient(
+            onConnected = {
+                updateSocketMsg("已连接!")
+
+            },
+            onDisConnected = {
+                updateSocketMsg("未连接!!!!")
             }
+        ) {
+            updateSocketMsg(it)
         }
     }
     private val audioUtils by lazy {
         AudioUtils()
+    }
+
+    private fun updateSocketMsg(newMsg: String) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            val oldMsg = mBinding.tvMsg.text?.toString()
+            mBinding.tvMsg.text = if (oldMsg.isNullOrEmpty()) {
+                newMsg
+            } else {
+                oldMsg + "\n" + newMsg
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

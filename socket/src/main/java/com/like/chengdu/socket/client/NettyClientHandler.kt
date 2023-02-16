@@ -20,7 +20,7 @@ class NettyClientHandler(private val nettyClient: NettyClient) : ChannelHandlerA
 
     // channel 处于不活动状态时调用
     override fun channelInactive(ctx: ChannelHandlerContext) {
-        println("与服务器的连接已经断开！")
+        nettyClient.onDisConnected?.invoke()
         nettyClient.reConnect()
     }
 
