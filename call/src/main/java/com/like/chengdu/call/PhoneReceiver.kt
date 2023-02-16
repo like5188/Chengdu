@@ -10,12 +10,14 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import java.util.concurrent.atomic.AtomicBoolean
 
 class PhoneReceiver(
     private val onOffHook: (String) -> Unit,
     private val onIdle: (String) -> Unit
 ) : BroadcastReceiver() {
     private var curPhoneNumber = ""
+    private var isOffHooked = AtomicBoolean(false)
     private val myPhoneListener by lazy {
         MyPhoneListener()
     }
@@ -48,14 +50,17 @@ class PhoneReceiver(
 
         @Deprecated("Deprecated in Java")
         override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+            if (curPhoneNumber.isEmpty()) {
+                return
+            }
             when (state) {
                 TelephonyManager.CALL_STATE_IDLE -> {
                     Log.d(
                         "TAG",
                         "onCallStateChanged CALL_STATE_IDLE curPhoneNumber=$curPhoneNumber"
                     )
-                    phoneNumber?.let {
-                        onIdle.invoke(it)
+                    if (isOffHooked.compareAndSet(true, false)) {
+                        onIdle.invoke(curPhoneNumber)// 挂断
                     }
                 }
                 TelephonyManager.CALL_STATE_OFFHOOK -> {
@@ -63,8 +68,8 @@ class PhoneReceiver(
                         "TAG",
                         "onCallStateChanged CALL_STATE_OFFHOOK curPhoneNumber=$curPhoneNumber"
                     )
-                    phoneNumber?.let {
-                        onOffHook.invoke(it)
+                    if (isOffHooked.compareAndSet(false, true)) {
+                        onOffHook.invoke(curPhoneNumber)// 接听
                     }
                 }
             }
