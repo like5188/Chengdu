@@ -9,6 +9,7 @@ import android.provider.CallLog
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 
 
 /**
@@ -89,6 +90,7 @@ data class Call(
     val date: Long?,//创建时间点
     val duration: Int?,//通话时长
 ) {
+
     companion object {
         fun getProjection() = arrayOf(
             CallLog.Calls.CACHED_NAME,
@@ -113,6 +115,10 @@ data class Call(
             )
         }
 
+    }
+
+    override fun toString(): String {
+        return "name=$name, number=$number, date=${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)}, duration=${duration}秒"
     }
 
 }
