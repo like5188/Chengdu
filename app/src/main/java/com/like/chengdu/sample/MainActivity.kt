@@ -53,12 +53,12 @@ class MainActivity : AppCompatActivity() {
                 },
                 {
                     Logger.e("挂断")
-//                    lifecycleScope.launch {
-//                        // 获取通话记录
-//                        getCallRecord()
-//                        // 获取录音文件
+                    lifecycleScope.launch {
+                        // 获取通话记录
+                        getCallRecord()
+                        // 获取录音文件
 //                        getCallRecordingFile()
-//                    }
+                    }
                 }
             )
         }
