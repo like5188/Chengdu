@@ -12,6 +12,10 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * @param onOffHook     接听电话回调
+ * @param onIdle        挂断电话回调
+ */
 class PhoneReceiver(
     private val onOffHook: (String) -> Unit,
     private val onIdle: (String) -> Unit
@@ -50,24 +54,20 @@ class PhoneReceiver(
 
         @Deprecated("Deprecated in Java")
         override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+            Log.d(
+                "TAG",
+                "onCallStateChanged state=$state curPhoneNumber=$curPhoneNumber phoneNumber=$phoneNumber"
+            )
             if (curPhoneNumber.isEmpty()) {
                 return
             }
             when (state) {
                 TelephonyManager.CALL_STATE_IDLE -> {
-                    Log.d(
-                        "TAG",
-                        "onCallStateChanged CALL_STATE_IDLE curPhoneNumber=$curPhoneNumber"
-                    )
                     if (isOffHooked.compareAndSet(true, false)) {
                         onIdle.invoke(curPhoneNumber)// 挂断
                     }
                 }
                 TelephonyManager.CALL_STATE_OFFHOOK -> {
-                    Log.d(
-                        "TAG",
-                        "onCallStateChanged CALL_STATE_OFFHOOK curPhoneNumber=$curPhoneNumber"
-                    )
                     if (isOffHooked.compareAndSet(false, true)) {
                         onOffHook.invoke(curPhoneNumber)// 接听
                     }
