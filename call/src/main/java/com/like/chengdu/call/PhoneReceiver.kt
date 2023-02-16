@@ -16,6 +16,9 @@ class PhoneReceiver(
     private val onIdle: (String) -> Unit
 ) : BroadcastReceiver() {
     private var curPhoneNumber = ""
+    private val myPhoneListener by lazy {
+        MyPhoneListener()
+    }
 
     override fun onReceive(context: Context, intent: Intent) {
         // 如果是去电
@@ -24,19 +27,19 @@ class PhoneReceiver(
             Log.d("TAG", "onReceive 呼叫:$$curPhoneNumber")
             val tm = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             // 监听电话状态
-            tm.listen(MyPhoneListener(), PhoneStateListener.LISTEN_CALL_STATE)
+            tm.listen(myPhoneListener, PhoneStateListener.LISTEN_CALL_STATE)
         }
     }
 
     companion object {
         @RequiresPermission(allOf = [Manifest.permission.READ_PHONE_STATE, Manifest.permission.PROCESS_OUTGOING_CALLS])
         fun listen(context: Context, onOffHook: (String) -> Unit, onIdle: (String) -> Unit) {
-            val phoneReceiver = PhoneReceiver(onOffHook, onIdle)
-            val intentFilter = IntentFilter()
-            //设置拨号广播过滤
-            intentFilter.addAction("android.intent.action.NEW_OUTGOING_CALL")
-            intentFilter.addAction("android.intent.action.PHONE_STATE")
-            context.registerReceiver(phoneReceiver, intentFilter)
+            IntentFilter().apply {
+                //设置拨号广播过滤
+                addAction("android.intent.action.NEW_OUTGOING_CALL")
+                addAction("android.intent.action.PHONE_STATE")
+                context.registerReceiver(PhoneReceiver(onOffHook, onIdle), this)
+            }
         }
     }
 
