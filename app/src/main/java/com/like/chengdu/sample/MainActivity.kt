@@ -25,7 +25,6 @@ class MainActivity : AppCompatActivity() {
         NettyClient(
             onConnected = {
                 updateSocketMsg("已连接!")
-
             },
             onDisConnected = {
                 updateSocketMsg("未连接!!!!")
