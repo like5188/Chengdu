@@ -21,12 +21,13 @@ class PhoneReceiver(
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        // 如果是去电
+        // 去电
         if (intent.action === Intent.ACTION_NEW_OUTGOING_CALL) {
+            // 获取拨打的号码
             curPhoneNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER) ?: ""
-            Log.d("TAG", "onReceive 呼叫:$$curPhoneNumber")
-            val tm = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+            Log.d("TAG", "onReceive ACTION_NEW_OUTGOING_CALL $$curPhoneNumber")
             // 监听电话状态
+            val tm = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             tm.listen(myPhoneListener, PhoneStateListener.LISTEN_CALL_STATE)
         }
     }
