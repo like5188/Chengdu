@@ -34,8 +34,7 @@ object CallRecordingUtils {
             }
         }
 
-    private fun isValidFile(file: File?): Boolean =
-        file != null && file.isFile && file.exists() && file.length() > 0
+    private fun isValidFile(file: File?): Boolean = file != null && file.isFile && file.exists()
 
     private fun isValidCallRecordingFile(file: File, config: ScanCallRecordConfig): Boolean {
         return file.name.lowercase(Locale.getDefault()).endsWith(config.fileSuffix) &&
