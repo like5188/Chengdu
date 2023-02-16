@@ -38,8 +38,8 @@ object CallUtils {
             context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
                 Call.getProjection(),
-                null,
-                null,
+                CallLog.Calls.NUMBER + "=?",
+                arrayOf(phoneNumber),
                 CallLog.Calls.DEFAULT_SORT_ORDER
             )?.use {
                 if (!it.moveToFirst()) {
@@ -54,27 +54,28 @@ object CallUtils {
      * 获取[num]条最近的通话记录
      */
     @RequiresPermission(allOf = [Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_CALL_LOG])
-    suspend fun getLatestCalls(context: Context, num: Int): List<Call> = withContext(Dispatchers.IO) {
-        var i = 0
-        val result = mutableListOf<Call>()
-        context.contentResolver.query(
-            CallLog.Calls.CONTENT_URI,
-            Call.getProjection(),
-            null,
-            null,
-            CallLog.Calls.DEFAULT_SORT_ORDER
-        )?.use {
-            if (!it.moveToFirst()) {
-                return@use
+    suspend fun getLatestCalls(context: Context, num: Int): List<Call> =
+        withContext(Dispatchers.IO) {
+            var i = 0
+            val result = mutableListOf<Call>()
+            context.contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                Call.getProjection(),
+                null,
+                null,
+                CallLog.Calls.DEFAULT_SORT_ORDER
+            )?.use {
+                if (!it.moveToFirst()) {
+                    return@use
+                }
+                while (!it.isAfterLast && i < num) {
+                    result.add(Call.parse(it))
+                    it.moveToNext()
+                    i++
+                }
             }
-            while (!it.isAfterLast && i < num) {
-                result.add(Call.parse(it))
-                it.moveToNext()
-                i++
-            }
+            result
         }
-        result
-    }
 
 }
 
