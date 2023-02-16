@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -22,12 +23,24 @@ class MainActivity : AppCompatActivity() {
         DataBindingUtil.setContentView(this, R.layout.activity_main)
     }
     private val nettyClient by lazy {
+        fun updateSocketMsg(newMsg: String) {
+            lifecycleScope.launch(Dispatchers.Main) {
+                val oldMsg = mBinding.etMsg.text?.toString()
+                val text = if (oldMsg.isNullOrEmpty()) {
+                    newMsg
+                } else {
+                    oldMsg + "\n" + newMsg
+                }
+                mBinding.etMsg.setText(text)
+                mBinding.etMsg.setSelection(text.length, text.length)
+            }
+        }
         NettyClient(
             onConnected = {
                 updateSocketMsg("已连接!")
             },
             onDisConnected = {
-                updateSocketMsg("未连接!!!!")
+                updateSocketMsg("!!!未连接!!!")
             }
         ) {
             updateSocketMsg(it)
@@ -37,20 +50,9 @@ class MainActivity : AppCompatActivity() {
         AudioUtils()
     }
 
-    private fun updateSocketMsg(newMsg: String) {
-        lifecycleScope.launch(Dispatchers.Main) {
-            val oldMsg = mBinding.tvMsg.text?.toString()
-            mBinding.tvMsg.text = if (oldMsg.isNullOrEmpty()) {
-                newMsg
-            } else {
-                oldMsg + "\n" + newMsg
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding
+        mBinding.etMsg.movementMethod = ScrollingMovementMethod.getInstance()
         lifecycleScope.launch {
             val requestMultiplePermissions = requestMultiplePermissions(
                 Manifest.permission.READ_PHONE_STATE,
@@ -102,7 +104,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun clearMsg(view: View) {
-        mBinding.tvMsg.text = ""
+        mBinding.etMsg.setText("")
     }
 
     fun listenPhoneState(view: View) {

@@ -51,19 +51,17 @@
             android:layout_marginEnd="15dp"
             android:orientation="horizontal">
 
-            <ScrollView
+            <EditText
+                android:id="@+id/etMsg"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="#eeeeee">
-
-                <TextView
-                    android:id="@+id/tvMsg"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="5dp" />
-
-            </ScrollView>
+                android:background="#eeeeee"
+                android:editable="false"
+                android:gravity="top"
+                android:padding="5dp"
+                android:scrollbars="vertical"
+                android:textSize="12sp" />
 
             <Button
                 android:layout_width="wrap_content"
