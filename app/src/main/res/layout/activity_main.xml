@@ -173,7 +173,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="start"
-                android:text="播放录音文件"
+                android:text="播放"
                 android:textAllCaps="false" />
 
             <Button
@@ -181,7 +181,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="pause"
-                android:text="暂停播放"
+                android:text="暂停"
+                android:textAllCaps="false" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:onClick="upload"
+                android:text="上传"
                 android:textAllCaps="false" />
         </LinearLayout>
 

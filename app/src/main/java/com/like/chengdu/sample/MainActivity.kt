@@ -179,6 +179,16 @@ class MainActivity : AppCompatActivity() {
         audioUtils.pause()
     }
 
+    fun upload(view: View) {
+//        lifecycleScope.launch {
+//            val filePath = mBinding.tvCallRecordingFile.text?.toString()
+//            if (filePath.isNullOrEmpty()) {
+//                return@launch
+//            }
+//            NetApi.uploadFile("xxx", null)
+//        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         audioUtils.destroy()
