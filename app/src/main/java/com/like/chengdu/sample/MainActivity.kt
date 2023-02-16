@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         nettyClient.disconnect()
     }
 
-    fun phoneState(view: View) {
+    fun listenPhoneState(view: View) {
         lifecycleScope.launch {
             val requestMultiplePermissions = requestMultiplePermissions(
                 Manifest.permission.READ_PHONE_STATE,

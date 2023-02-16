@@ -21,7 +21,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="phoneState"
+        android:onClick="listenPhoneState"
         android:text="监听通话状态"
         android:textAllCaps="false" />
 
