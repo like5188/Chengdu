@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
                     Logger.e("挂断")
                     lifecycleScope.launch {
                         // 获取通话记录
-                        mBinding.tvCall.text = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it).toString()
+                        mBinding.tvCall.text = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.toString() ?: ""
                         // 获取录音文件
                         val config = NetApi.getScanCallRecordingConfig(
                             "xxx",
@@ -133,6 +133,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun call(view: View) {
+        val phone = mBinding.etPhone.text?.toString()
+        if (phone.isNullOrEmpty()) {
+            return
+        }
         lifecycleScope.launch {
             val requestMultiplePermissions = requestMultiplePermissions(
                 Manifest.permission.CALL_PHONE,
@@ -140,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            CallUtils.call(this@MainActivity, "10000")
+            CallUtils.call(this@MainActivity, phone)
         }
     }
 
