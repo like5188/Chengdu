@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
@@ -72,9 +73,7 @@ class MainActivity : AppCompatActivity() {
                 },
                 {
                     Logger.e("挂断")
-                    lifecycleScope.launch {
-                        // 获取通话记录
-                        mBinding.tvCall.text = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.toString() ?: ""
+                    lifecycleScope.launch(Dispatchers.Main) {
                         // 获取录音文件
                         val config = NetApi.getScanCallRecordingConfig(
                             "xxx",
@@ -82,8 +81,28 @@ class MainActivity : AppCompatActivity() {
                             RomUtils.romInfo.version,
                             Build.VERSION.SDK_INT
                         )
-                        mBinding.tvCallRecordingFile.text =
-                            CallRecordingUtils.getLastModifiedCallRecordingFile(config)?.absolutePath ?: ""
+                        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(config)
+                        mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
+                        val url = NetApi.uploadFile("", file)
+                        Toast.makeText(
+                            this@MainActivity, if (url != null) {
+                                "上传文件成功"
+                            } else {
+                                "上传文件失败！！！"
+                            }, Toast.LENGTH_LONG
+                        ).show()
+                        // 获取通话记录
+                        val call = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)
+                        mBinding.tvCall.text = call?.toString() ?: ""
+                        call?.recordingFileUrl = url
+                        val result = NetApi.uploadCall("", call)
+                        Toast.makeText(
+                            this@MainActivity, if (result) {
+                                "上传通话记录成功"
+                            } else {
+                                "上传通话记录失败！！！"
+                            }, Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             )
@@ -105,44 +124,6 @@ class MainActivity : AppCompatActivity() {
 
     fun clearMsg(view: View) {
         mBinding.etMsg.setText("")
-    }
-
-    fun listenPhoneState(view: View) {
-        lifecycleScope.launch {
-            val requestMultiplePermissions = requestMultiplePermissions(
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.PROCESS_OUTGOING_CALLS,
-                Manifest.permission.READ_CALL_LOG,
-                Manifest.permission.WRITE_CALL_LOG,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-            ).all { it.value }
-            if (!requestMultiplePermissions) {
-                return@launch
-            }
-            PhoneReceiver.listen(
-                this@MainActivity,
-                {
-                    Logger.e("接听")
-                },
-                {
-                    Logger.e("挂断")
-                    lifecycleScope.launch {
-                        // 获取通话记录
-                        mBinding.tvCall.text = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it).toString()
-                        // 获取录音文件
-                        val config = NetApi.getScanCallRecordingConfig(
-                            "xxx",
-                            RomUtils.romInfo.name,
-                            RomUtils.romInfo.version,
-                            Build.VERSION.SDK_INT
-                        )
-                        mBinding.tvCallRecordingFile.text =
-                            CallRecordingUtils.getLastModifiedCallRecordingFile(config)?.absolutePath ?: ""
-                    }
-                }
-            )
-        }
     }
 
     fun call(view: View) {
@@ -177,16 +158,6 @@ class MainActivity : AppCompatActivity() {
 
     fun pause(view: View) {
         audioUtils.pause()
-    }
-
-    fun upload(view: View) {
-//        lifecycleScope.launch {
-//            val filePath = mBinding.tvCallRecordingFile.text?.toString()
-//            if (filePath.isNullOrEmpty()) {
-//                return@launch
-//            }
-//            NetApi.uploadFile("xxx", null)
-//        }
     }
 
     override fun onDestroy() {

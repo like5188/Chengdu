@@ -68,15 +68,51 @@ object NetApi {
     }
 
     /**
+     * 上传通话记录
+     *
+     * @param call  通话记录
+     */
+    suspend fun uploadCall(
+        url: String?,
+        call: Call?
+    ): Boolean {
+        if (url.isNullOrEmpty() || call == null) {
+            return false
+        }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val body: MultipartBody = MultipartBody.Builder()
+                    .setType("multipart/form-data".toMediaType())
+                    .addFormDataPart("name", call.name.toString())
+                    .addFormDataPart("number", call.number.toString())
+                    .addFormDataPart("date", call.date.toString())
+                    .addFormDataPart("duration", call.duration.toString())
+                    .build()
+                val request: Request = Request.Builder()
+                    .post(body)
+                    .url(url)
+                    .build()
+
+                val response: Response = mOkHttpClient.newCall(request).execute()
+                response.isSuccessful
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
+    }
+
+    /**
      * 上传文件
      *
      * @param url   上传路径
      * @param file  需要上传的文件
-     * @return 上传成功返回true，失败返回false
+     * @return 文件网络地址
      */
-    suspend fun uploadFile(url: String?, file: File?): Boolean {
+    suspend fun uploadFile(url: String?, file: File?): String? {
         if (url.isNullOrEmpty() || file == null || !file.exists() || file.isDirectory || file.length() <= 0) {
-            return false
+            return null
         }
         return withContext(Dispatchers.IO) {
             try {
@@ -84,10 +120,17 @@ object NetApi {
                 val requestBody: RequestBody = data.toRequestBody(null, 0, data.size)
                 val request: Request = Request.Builder().url(url).method("PUT", requestBody).build()
                 val response: Response = mOkHttpClient.newCall(request).execute()
-                response.isSuccessful
+                if (response.isSuccessful) {
+                    val resultModel: ResultModel<String> = mGson.fromJson(
+                        response.body?.string(),
+                        ResultModel::class.java
+                    ) as ResultModel<String>
+                    resultModel.data
+                } else {
+                    null
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
-                false
+                null
             }
         }
     }

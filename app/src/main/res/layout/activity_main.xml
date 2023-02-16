@@ -140,7 +140,9 @@
             <TextView
                 android:id="@+id/tvCall"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:background="#eeeeee" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -159,7 +161,9 @@
             <TextView
                 android:id="@+id/tvCallRecordingFile"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:background="#eeeeee" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -182,15 +186,6 @@
                 android:layout_weight="1"
                 android:onClick="pause"
                 android:text="暂停"
-                android:textAllCaps="false" />
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:enabled="false"
-                android:onClick="upload"
-                android:text="上传"
                 android:textAllCaps="false" />
         </LinearLayout>
 
