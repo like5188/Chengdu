@@ -26,11 +26,16 @@ object NetApi {
      *
      * @return 上传成功返回true，失败返回false
      */
-    suspend fun getScanCallRecordConfig(url: String?, romName: String, romVersion: String, sdkVersion: Int): ScanCallRecordConfig? {
+    suspend fun getScanCallRecordConfig(
+        url: String?,
+        romName: String,
+        romVersion: String,
+        sdkVersion: Int
+    ): ScanCallRecordConfig? {
         if (url.isNullOrEmpty()) {
             return null
         }
-        return ScanCallRecordConfig("/Music/Recordings/Call Recordings/", 3, "yyMMddHHmm", "-", ".amr", 1)
+        return ScanCallRecordConfig("/Music/Recordings/Call Recordings/", ".amr", 5000)
 
         return withContext(Dispatchers.IO) {
             try {
