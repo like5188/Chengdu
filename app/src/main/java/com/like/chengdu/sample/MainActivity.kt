@@ -13,16 +13,24 @@ import com.like.chengdu.sample.databinding.ActivityMainBinding
 import com.like.chengdu.socket.client.NettyClient
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity() {
-    private val mDataBinding: ActivityMainBinding by lazy {
+    private val mBinding: ActivityMainBinding by lazy {
         DataBindingUtil.setContentView(this, R.layout.activity_main)
     }
     private val nettyClient by lazy {
-        NettyClient("192.168.31.112", 60000) {
-            println("收到服务端的消息:$it")
+        NettyClient {
+            lifecycleScope.launch(Dispatchers.Main) {
+                val oldMsg = mBinding.tvMsg.text?.toString()
+                mBinding.tvMsg.text = if (oldMsg.isNullOrEmpty()) {
+                    it
+                } else {
+                    oldMsg + "\n" + it
+                }
+            }
         }
     }
     private val audioUtils by lazy {
@@ -31,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mDataBinding
+        mBinding
         lifecycleScope.launch {
             val requestMultiplePermissions = requestMultiplePermissions(
                 Manifest.permission.READ_PHONE_STATE,
@@ -53,7 +61,7 @@ class MainActivity : AppCompatActivity() {
                     Logger.e("挂断")
                     lifecycleScope.launch {
                         // 获取通话记录
-                        mDataBinding.tvCall.text = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it).toString()
+                        mBinding.tvCall.text = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it).toString()
                         // 获取录音文件
                         val config = NetApi.getScanCallRecordingConfig(
                             "xxx",
@@ -61,7 +69,7 @@ class MainActivity : AppCompatActivity() {
                             RomUtils.romInfo.version,
                             Build.VERSION.SDK_INT
                         )
-                        mDataBinding.tvCallRecordingFile.text =
+                        mBinding.tvCallRecordingFile.text =
                             CallRecordingUtils.getLastModifiedCallRecordingFile(config)?.absolutePath ?: ""
                     }
                 }
@@ -70,11 +78,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun connect(view: View) {
-        nettyClient.connect()
+        val host = mBinding.etHost.text?.toString() ?: ""
+        val port = mBinding.etPort.text?.toString()?.toInt() ?: -1
+        if (host.isEmpty() || port == -1) {
+            return
+        }
+        nettyClient.connect(host, port)
     }
 
     fun disconnect(view: View) {
         nettyClient.disconnect()
+    }
+
+    fun clearMsg(view: View) {
+        mBinding.tvMsg.text = ""
     }
 
     fun listenPhoneState(view: View) {
@@ -99,7 +116,7 @@ class MainActivity : AppCompatActivity() {
                     Logger.e("挂断")
                     lifecycleScope.launch {
                         // 获取通话记录
-                        mDataBinding.tvCall.text = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it).toString()
+                        mBinding.tvCall.text = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it).toString()
                         // 获取录音文件
                         val config = NetApi.getScanCallRecordingConfig(
                             "xxx",
@@ -107,7 +124,7 @@ class MainActivity : AppCompatActivity() {
                             RomUtils.romInfo.version,
                             Build.VERSION.SDK_INT
                         )
-                        mDataBinding.tvCallRecordingFile.text =
+                        mBinding.tvCallRecordingFile.text =
                             CallRecordingUtils.getLastModifiedCallRecordingFile(config)?.absolutePath ?: ""
                     }
                 }
@@ -129,7 +146,7 @@ class MainActivity : AppCompatActivity() {
 
     //    private var i = 0
     fun start(view: View) {
-        val filePath = mDataBinding.tvCallRecordingFile.text?.toString()
+        val filePath = mBinding.tvCallRecordingFile.text?.toString()
         if (filePath.isNullOrEmpty()) {
             return
         }

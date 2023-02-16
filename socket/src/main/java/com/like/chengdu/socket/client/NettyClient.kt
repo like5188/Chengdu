@@ -10,15 +10,11 @@ import java.util.concurrent.TimeUnit
 /**
  * Netty客户端
  *
- * @param host                      服务器地址
- * @param port                      服务器端口
  * @param connectTimeoutMillis      连接超时时长，默认10000毫秒
  * @param reconnectIntervalMillis   两次自动重连之间时间间隔，默认3000毫秒
  * @param onMessageReceived         接收到了服务器发来的消息的回调
  */
 class NettyClient(
-    private val host: String,
-    private val port: Int,
     private val connectTimeoutMillis: Int = 10000,
     private val reconnectIntervalMillis: Long = 3000,
     val onMessageReceived: (String) -> Unit
@@ -36,8 +32,12 @@ class NettyClient(
     }
     private var connectFlag = -1
 
+    /**
+     * @param host  服务器地址
+     * @param port  服务器端口
+     */
     @Synchronized
-    fun connect() {
+    fun connect(host: String, port: Int) {
         if (connectFlag == 0) {
             return
         }
