@@ -13,12 +13,12 @@ import androidx.annotation.RequiresPermission
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * @param onOffHook     接听电话回调
- * @param onIdle        挂断电话回调
+ * @param onAnswered    接听电话回调
+ * @param onHungUp      挂断电话回调
  */
 class PhoneReceiver(
-    private val onOffHook: (String) -> Unit,
-    private val onIdle: (String) -> Unit
+    private val onAnswered: (String) -> Unit,
+    private val onHungUp: (String) -> Unit
 ) : BroadcastReceiver() {
     private var curPhoneNumber = ""
     private var isOffHooked = AtomicBoolean(false)
@@ -40,12 +40,12 @@ class PhoneReceiver(
 
     companion object {
         @RequiresPermission(allOf = [Manifest.permission.READ_PHONE_STATE, Manifest.permission.PROCESS_OUTGOING_CALLS])
-        fun listen(context: Context, onOffHook: (String) -> Unit, onIdle: (String) -> Unit) {
+        fun listen(context: Context, onAnswered: (String) -> Unit, onHungUp: (String) -> Unit) {
             IntentFilter().apply {
                 //设置拨号广播过滤
                 addAction("android.intent.action.NEW_OUTGOING_CALL")
                 addAction("android.intent.action.PHONE_STATE")
-                context.registerReceiver(PhoneReceiver(onOffHook, onIdle), this)
+                context.registerReceiver(PhoneReceiver(onAnswered, onHungUp), this)
             }
         }
     }
@@ -61,16 +61,13 @@ class PhoneReceiver(
             if (curPhoneNumber.isEmpty()) {
                 return
             }
-            when (state) {
-                TelephonyManager.CALL_STATE_IDLE -> {
-                    if (isOffHooked.compareAndSet(true, false)) {
-                        onIdle.invoke(curPhoneNumber)// 挂断
-                    }
+            if (state == TelephonyManager.CALL_STATE_IDLE) {
+                if (isOffHooked.compareAndSet(true, false)) {
+                    onHungUp.invoke(curPhoneNumber)// 挂断
                 }
-                TelephonyManager.CALL_STATE_OFFHOOK -> {
-                    if (isOffHooked.compareAndSet(false, true)) {
-                        onOffHook.invoke(curPhoneNumber)// 接听
-                    }
+            } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                if (isOffHooked.compareAndSet(false, true)) {
+                    onAnswered.invoke(curPhoneNumber)// 接听
                 }
             }
         }
