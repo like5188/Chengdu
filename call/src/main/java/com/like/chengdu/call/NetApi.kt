@@ -26,16 +26,16 @@ object NetApi {
      *
      * @return 上传成功返回true，失败返回false
      */
-    suspend fun getScanCallRecordConfig(
+    suspend fun getScanCallRecordingConfig(
         url: String?,
         romName: String,
         romVersion: String,
         sdkVersion: Int
-    ): ScanCallRecordConfig? {
+    ): ScanCallRecordingConfig? {
         if (url.isNullOrEmpty()) {
             return null
         }
-        return ScanCallRecordConfig("/Music/Recordings/Call Recordings/", ".amr", 5000)
+        return ScanCallRecordingConfig("/Music/Recordings/Call Recordings/", ".amr", 5000)
 
         return withContext(Dispatchers.IO) {
             try {
@@ -52,7 +52,7 @@ object NetApi {
 
                 val response: Response = mOkHttpClient.newCall(request).execute()
                 if (response.isSuccessful) {
-                    Gson().fromJson(response.body?.string(), ScanCallRecordConfig::class.java)
+                    Gson().fromJson(response.body?.string(), ScanCallRecordingConfig::class.java)
                 } else {
                     null
                 }

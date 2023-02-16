@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun getRecord(view: View) {
+    fun getRecording(view: View) {
         lifecycleScope.launch {
             val requestMultiplePermissions = requestMultiplePermissions(
                 Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            val config = NetApi.getScanCallRecordConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version, Build.VERSION.SDK_INT)
+            val config = NetApi.getScanCallRecordingConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version, Build.VERSION.SDK_INT)
             Logger.d(CallRecordingUtils.getLastModifiedCallRecordingFile(config))
         }
     }
