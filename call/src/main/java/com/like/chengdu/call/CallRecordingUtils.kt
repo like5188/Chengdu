@@ -14,7 +14,7 @@ import java.util.*
 object CallRecordingUtils {
 
     @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    suspend fun getCallRecordingFile(config: ScanCallRecordConfig?): File? =
+    suspend fun getLastModifiedCallRecordingFile(config: ScanCallRecordConfig?): File? =
         withContext(Dispatchers.IO) {
             config ?: return@withContext null
             try {
@@ -23,7 +23,9 @@ object CallRecordingUtils {
                 if (!dir.exists() || !dir.isDirectory) {
                     return@withContext null
                 }
-                dir.listFiles()?.firstOrNull {
+                dir.listFiles()?.sortedBy {
+                    it.lastModified()
+                }?.firstOrNull {
                     isValidFile(it) && isValidCallRecordingFile(it, config)
                 }
             } catch (e: Exception) {

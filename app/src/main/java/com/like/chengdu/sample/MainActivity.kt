@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
             val config = NetApi.getScanCallRecordConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version, Build.VERSION.SDK_INT)
-            Logger.d(CallRecordingUtils.getCallRecordingFile(config))
+            Logger.d(CallRecordingUtils.getLastModifiedCallRecordingFile(config))
         }
     }
 
