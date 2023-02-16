@@ -2,11 +2,11 @@ package com.like.chengdu.sample
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
@@ -17,6 +17,7 @@ import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity() {
@@ -54,6 +55,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding.etMsg.movementMethod = ScrollingMovementMethod.getInstance()
+        listenPhoneState()
+    }
+
+    private fun listenPhoneState() {
         lifecycleScope.launch {
             val requestMultiplePermissions = requestMultiplePermissions(
                 Manifest.permission.READ_PHONE_STATE,
@@ -74,38 +79,43 @@ class MainActivity : AppCompatActivity() {
                 {
                     Logger.e("挂断")
                     lifecycleScope.launch(Dispatchers.Main) {
-                        // 获取录音文件
-                        val config = NetApi.getScanCallRecordingConfig(
-                            "xxx",
-                            RomUtils.romInfo.name,
-                            RomUtils.romInfo.version,
-                            Build.VERSION.SDK_INT
-                        )
-                        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(config)
-                        mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
-                        val url = NetApi.uploadFile("", file)
-                        Toast.makeText(
-                            this@MainActivity, if (url != null) {
-                                "上传文件成功"
-                            } else {
-                                "上传文件失败！！！"
-                            }, Toast.LENGTH_LONG
-                        ).show()
-                        // 获取通话记录
-                        val call = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)
-                        mBinding.tvCall.text = call?.toString() ?: ""
-                        call?.recordingFileUrl = url
-                        val result = NetApi.uploadCall("", call)
-                        Toast.makeText(
-                            this@MainActivity, if (result) {
-                                "上传通话记录成功"
-                            } else {
-                                "上传通话记录失败！！！"
-                            }, Toast.LENGTH_LONG
-                        ).show()
+                        // 获取录音文件并上传
+                        val url = getAndUploadCallRecordingFile()
+                        // 获取通话记录并上传
+                        getAndUploadCall(it, url)
                     }
                 }
             )
+        }
+    }
+
+    private suspend fun getAndUploadCallRecordingFile(): String? = withContext(Dispatchers.Main) {
+        val config = NetApi.getScanCallRecordingConfig(
+            "xxx",
+            RomUtils.romInfo.name,
+            RomUtils.romInfo.version,
+            Build.VERSION.SDK_INT
+        )
+        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(config)
+        mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
+        val url = NetApi.uploadFile("", file)
+        if (url != null) {
+            mBinding.tvCallRecordingFile.setTextColor(Color.parseColor("#00ff00"))
+        } else {
+            mBinding.tvCallRecordingFile.setTextColor(Color.parseColor("#ff0000"))
+        }
+        url
+    }
+
+    private suspend fun getAndUploadCall(phoneNumber: String, url: String?) = withContext(Dispatchers.Main) {
+        val call = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, phoneNumber)
+        mBinding.tvCall.text = call?.toString() ?: ""
+        call?.recordingFileUrl = url
+        val result = NetApi.uploadCall("", call)
+        if (result) {
+            mBinding.tvCall.setTextColor(Color.parseColor("#00ff00"))
+        } else {
+            mBinding.tvCall.setTextColor(Color.parseColor("#ff0000"))
         }
     }
 

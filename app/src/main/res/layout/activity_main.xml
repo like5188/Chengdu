@@ -124,11 +124,18 @@
             android:text="拨打电话"
             android:textAllCaps="false" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:text="文本颜色：上传成功时为绿色，上传失败时为红色"
+            android:textSize="12sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
-            android:layout_marginTop="10dp"
             android:layout_marginEnd="15dp"
             android:orientation="horizontal">
 
