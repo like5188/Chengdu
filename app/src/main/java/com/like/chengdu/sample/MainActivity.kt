@@ -37,6 +37,39 @@ class MainActivity : AppCompatActivity() {
         nettyClient.disconnect()
     }
 
+    fun phoneState(view: View) {
+        lifecycleScope.launch {
+            val requestMultiplePermissions = requestMultiplePermissions(
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.PROCESS_OUTGOING_CALLS,
+            ).all { it.value }
+            if (!requestMultiplePermissions) {
+                return@launch
+            }
+            PhoneReceiver.listen(
+                this@MainActivity,
+                {
+                    Logger.e("接听")
+                },
+                {
+                    Logger.e("挂断")
+                }
+            )
+        }
+    }
+
+    fun call(view: View) {
+        lifecycleScope.launch {
+            val requestMultiplePermissions = requestMultiplePermissions(
+                Manifest.permission.CALL_PHONE,
+            ).all { it.value }
+            if (!requestMultiplePermissions) {
+                return@launch
+            }
+            CallUtils.call(this@MainActivity, "10000")
+        }
+    }
+
     fun getCallRecord(view: View) {
         lifecycleScope.launch {
             val requestMultiplePermissions = requestMultiplePermissions(
@@ -59,21 +92,13 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            val config = NetApi.getScanCallRecordingConfig("xxx", RomUtils.romInfo.name, RomUtils.romInfo.version, Build.VERSION.SDK_INT)
+            val config = NetApi.getScanCallRecordingConfig(
+                "xxx",
+                RomUtils.romInfo.name,
+                RomUtils.romInfo.version,
+                Build.VERSION.SDK_INT
+            )
             Logger.d(CallRecordingUtils.getLastModifiedCallRecordingFile(config))
-        }
-    }
-
-    fun phoneState(view: View) {
-        lifecycleScope.launch {
-            val requestMultiplePermissions = requestMultiplePermissions(
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.PROCESS_OUTGOING_CALLS,
-            ).all { it.value }
-            if (!requestMultiplePermissions) {
-                return@launch
-            }
-            PhoneReceiver.listen(this@MainActivity)
         }
     }
 

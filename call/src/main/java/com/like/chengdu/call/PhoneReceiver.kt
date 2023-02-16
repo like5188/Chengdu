@@ -9,18 +9,19 @@ import android.content.IntentFilter
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresPermission
 
-class PhoneReceiver : BroadcastReceiver() {
+class PhoneReceiver(
+    private val onOffHook: (String) -> Unit,
+    private val onIdle: (String) -> Unit
+) : BroadcastReceiver() {
     private var curPhoneNumber = ""
 
     override fun onReceive(context: Context, intent: Intent) {
         // 如果是去电
         if (intent.action === Intent.ACTION_NEW_OUTGOING_CALL) {
             curPhoneNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER) ?: ""
-            Toast.makeText(context.applicationContext, "呼叫:$curPhoneNumber", Toast.LENGTH_LONG).show()
-        } else {
+            Log.d("TAG", "onReceive 呼叫:$$curPhoneNumber")
             val tm = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             // 监听电话状态
             tm.listen(MyPhoneListener(), PhoneStateListener.LISTEN_CALL_STATE)
@@ -29,8 +30,8 @@ class PhoneReceiver : BroadcastReceiver() {
 
     companion object {
         @RequiresPermission(allOf = [Manifest.permission.READ_PHONE_STATE, Manifest.permission.PROCESS_OUTGOING_CALLS])
-        fun listen(context: Context) {
-            val phoneReceiver = PhoneReceiver()
+        fun listen(context: Context, onOffHook: (String) -> Unit, onIdle: (String) -> Unit) {
+            val phoneReceiver = PhoneReceiver(onOffHook, onIdle)
             val intentFilter = IntentFilter()
             //设置拨号广播过滤
             intentFilter.addAction("android.intent.action.NEW_OUTGOING_CALL")
@@ -43,16 +44,24 @@ class PhoneReceiver : BroadcastReceiver() {
 
         @Deprecated("Deprecated in Java")
         override fun onCallStateChanged(state: Int, phoneNumber: String?) {
-            Log.w("TAG", "onCallStateChanged state:$state phoneNumber:$phoneNumber curPhoneNumber=$curPhoneNumber")
             when (state) {
                 TelephonyManager.CALL_STATE_IDLE -> {
-                    Log.e("TAG", "空闲")
+                    Log.d(
+                        "TAG",
+                        "onCallStateChanged CALL_STATE_IDLE curPhoneNumber=$curPhoneNumber"
+                    )
+                    phoneNumber?.let {
+                        onIdle.invoke(it)
+                    }
                 }
                 TelephonyManager.CALL_STATE_OFFHOOK -> {
-                    Log.e("TAG", "接听")
-                }
-                TelephonyManager.CALL_STATE_RINGING -> {
-                    Log.e("TAG", "响铃")
+                    Log.d(
+                        "TAG",
+                        "onCallStateChanged CALL_STATE_OFFHOOK curPhoneNumber=$curPhoneNumber"
+                    )
+                    phoneNumber?.let {
+                        onOffHook.invoke(it)
+                    }
                 }
             }
         }
