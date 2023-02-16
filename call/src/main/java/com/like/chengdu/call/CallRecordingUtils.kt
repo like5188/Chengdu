@@ -64,22 +64,22 @@ object CallRecordingUtils {
  * 扫描通话录音文件的配置(由后台配置)
  */
 data class ScanCallRecordingConfig(
-    private val filePaths: String?,// 通话录音文件路径。例如："/Music/Recordings/Call Recordings/"
-    private val fileSuffixes: String?,// 通话录音文件后缀
+    private val filePaths: String?,// 通话录音文件路径。例如："/Music/Recordings/Call Recordings/,/record"
+    private val fileSuffixes: String?,// 通话录音文件后缀，例如：".mp3,.3gp"
     private val modifyTimeError: Long?,// 修改时间与扫描文件时间的误差值。毫秒
 ) {
     fun getFilePathList() =
         filePaths?.split(",") ?: listOf(
-            "record",
-            "Sounds/CallRecord",
-            "MIUI/sound_recorder/call_rec",
-            "Recorder",
-            "Recordings/Call Recordings",
-            "Music/Recordings/Call Recordings",
-            "Recordings",
-            "Record/Call",
-            "Sounds",
-            "PhoneRecord",
+            "/record",
+            "/Sounds/CallRecord",
+            "/MIUI/sound_recorder/call_rec",
+            "/Recorder",
+            "/Recordings/Call Recordings",
+            "/Music/Recordings/Call Recordings",
+            "/Recordings",
+            "/Record/Call",
+            "/Sounds",
+            "/PhoneRecord",
         )
 
     fun getFileSuffixList() =
