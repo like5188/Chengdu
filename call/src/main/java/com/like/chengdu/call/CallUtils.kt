@@ -121,15 +121,15 @@ data class Call(
 
     override fun toString(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-        return "联系人=$name, " +
-                "被叫号码=$number, " +
-                "呼叫状态=$callState, " +
-                "开始时间=${sdf.format(dateOfCallOccurred)}, " +
-                "接通时间=${sdf.format(dateOfCallConnected)}, " +
-                "结束时间=${sdf.format(dateOfCallHungUp)}, " +
-                "通话时长=${duration}秒, " +
-                "持续时间=${xxx1}秒, " +
-                "挂断原因=$reasonOfHungUp, " +
+        return "联系人=$name,\n" +
+                "被叫号码=$number,\n" +
+                "呼叫状态=$callState,\n" +
+                "开始时间=${sdf.format(dateOfCallOccurred)},\n" +
+                "接通时间=${sdf.format(dateOfCallConnected)},\n" +
+                "结束时间=${sdf.format(dateOfCallHungUp)},\n" +
+                "通话时长=${duration}秒,\n" +
+                "持续时间=${xxx1}秒,\n" +
+                "挂断原因=$reasonOfHungUp,\n" +
                 "录音文件=$recordingFileUrl"
     }
 
