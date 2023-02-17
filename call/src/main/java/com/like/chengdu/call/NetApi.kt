@@ -36,7 +36,12 @@ object NetApi {
         if (url.isNullOrEmpty()) {
             return null
         }
-        return ScanCallRecordingConfig("/Music/Recordings/Call Recordings/", ".amr", 5000)
+        return ScanCallRecordingConfig(
+            arrayOf("/Music/Recordings/Call Recordings/"),
+            arrayOf(".amr"),
+            5000,
+            1000
+        )
 
         return withContext(Dispatchers.IO) {
             try {
@@ -81,7 +86,8 @@ object NetApi {
 
         return withContext(Dispatchers.IO) {
             try {
-                val body = mGson.toJson(call).toRequestBody("application/json;charset=utf-8".toMediaType())
+                val body =
+                    mGson.toJson(call).toRequestBody("application/json;charset=utf-8".toMediaType())
                 val request: Request = Request.Builder()
                     .post(body)
                     .url(url)

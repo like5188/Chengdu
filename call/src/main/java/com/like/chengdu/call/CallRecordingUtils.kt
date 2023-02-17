@@ -4,6 +4,7 @@ import android.Manifest
 import android.os.Environment
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
@@ -19,9 +20,11 @@ object CallRecordingUtils {
             config ?: return@withContext null
             try {
                 val parent = Environment.getExternalStorageDirectory()
-                val filePathList = config.getFilePathList()
+                val filePaths = config.getFilePaths()
+                val scanDelay = config.getScanDelay()
                 val currentTimeMillis = System.currentTimeMillis()
-                filePathList.forEach { filePath ->
+                delay(scanDelay)
+                filePaths.forEach { filePath ->
                     val dir = File(parent, filePath)
                     if (dir.exists() && dir.isDirectory) {
                         val file = dir.listFiles()?.sortedByDescending {
@@ -51,10 +54,10 @@ object CallRecordingUtils {
         config: ScanCallRecordingConfig,
         currentTimeMillis: Long
     ): Boolean {
-        val fileSuffixList = config.getFileSuffixList()
+        val fileSuffixes = config.getFileSuffixes()
         val modifyTimeError = config.getModifyTimeError()
         val fileName = file.name.lowercase(Locale.getDefault())
-        return fileSuffixList.any { fileName.contains(it) } &&
+        return fileSuffixes.any { fileName.contains(it) } &&
                 currentTimeMillis - file.lastModified() <= modifyTimeError
     }
 
@@ -64,27 +67,29 @@ object CallRecordingUtils {
  * 扫描通话录音文件的配置(由后台配置)
  */
 data class ScanCallRecordingConfig(
-    private val filePaths: String?,// 通话录音文件路径。例如："/Music/Recordings/Call Recordings/,/record"
-    private val fileSuffixes: String?,// 通话录音文件后缀，例如：".mp3,.3gp"
+    private val filePaths: Array<String>?,// 通话录音文件路径。
+    private val fileSuffixes: Array<String>?,// 通话录音文件后缀。
     private val modifyTimeError: Long?,// 修改时间与扫描文件时间的误差值。毫秒
+    private val scanDelay: Long?,// 扫描延迟时间。毫秒
 ) {
-    fun getFilePathList() =
-        filePaths?.split(",") ?: listOf(
-            "/record",
-            "/Sounds/CallRecord",
-            "/MIUI/sound_recorder/call_rec",
-            "/Recorder",
-            "/Recordings/Call Recordings",
-            "/Music/Recordings/Call Recordings",
-            "/Recordings",
-            "/Record/Call",
-            "/Sounds",
-            "/PhoneRecord",
-        )
+    fun getFilePaths(): Array<String> = filePaths ?: arrayOf(
+        "/record",
+        "/Sounds/CallRecord",
+        "/MIUI/sound_recorder/call_rec",
+        "/Recorder",
+        "/Recordings/Call Recordings",
+        "/Music/Recordings/Call Recordings",
+        "/Recordings",
+        "/Record/Call",
+        "/Sounds",
+        "/PhoneRecord",
+    )
 
-    fun getFileSuffixList() =
-        fileSuffixes?.split(",") ?: listOf(".mp3", ".wav", ".3gp", ".amr", ".3gpp")
+    fun getFileSuffixes(): Array<String> =
+        fileSuffixes ?: arrayOf(".mp3", ".wav", ".3gp", ".amr", ".3gpp")
 
-    fun getModifyTimeError() = modifyTimeError ?: 3000L
+    fun getModifyTimeError(): Long = modifyTimeError ?: 3000L
+
+    fun getScanDelay(): Long = scanDelay ?: 1000L
 
 }
