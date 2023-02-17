@@ -2,6 +2,7 @@ package com.like.chengdu.call
 
 import android.Manifest
 import android.os.Environment
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -17,11 +18,12 @@ object CallRecordingUtils {
     @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
     suspend fun getLastModifiedCallRecordingFile(config: ScanCallRecordingConfig?): File? =
         withContext(Dispatchers.IO) {
-            config ?: return@withContext null
             try {
+                val c = config ?: ScanCallRecordingConfig()
+                Log.i("TAG", c.toString())
                 val parent = Environment.getExternalStorageDirectory()
-                val filePaths = config.getFilePaths()
-                val scanDelay = config.getScanDelay()
+                val filePaths = c.getFilePaths()
+                val scanDelay = c.getScanDelay()
                 val currentTimeMillis = System.currentTimeMillis()
                 delay(scanDelay)
                 filePaths.forEach { filePath ->
@@ -32,7 +34,7 @@ object CallRecordingUtils {
                         }?.firstOrNull {
                             isValidFile(it) && isValidCallRecordingFile(
                                 it,
-                                config,
+                                c,
                                 currentTimeMillis
                             )
                         }
@@ -67,10 +69,10 @@ object CallRecordingUtils {
  * 扫描通话录音文件的配置(由后台配置)
  */
 data class ScanCallRecordingConfig(
-    private val filePaths: Array<String>?,// 通话录音文件路径。
-    private val fileSuffixes: Array<String>?,// 通话录音文件后缀。
-    private val modifyTimeError: Long?,// 修改时间与扫描文件时间的误差值。毫秒
-    private val scanDelay: Long?,// 扫描延迟时间。毫秒
+    private val filePaths: Array<String>? = null,// 通话录音文件路径。
+    private val fileSuffixes: Array<String>? = null,// 通话录音文件后缀。
+    private val modifyTimeError: Long? = null,// 修改时间与扫描文件时间的误差值。毫秒
+    private val scanDelay: Long? = null,// 扫描延迟时间。毫秒
 ) {
     fun getFilePaths(): Array<String> = filePaths ?: arrayOf(
         "/record",

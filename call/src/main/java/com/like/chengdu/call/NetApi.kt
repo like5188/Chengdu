@@ -3,9 +3,12 @@ package com.like.chengdu.call
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import java.io.File
 
 /**
@@ -22,46 +25,24 @@ object NetApi {
 
     /**
      * 获取扫描录音文件的配置
-     *
-     * @param romName           手机系统名称
-     * @param romVersion        手机系统版本
-     * @param sdkVersion        Android Sdk 版本
      */
-    suspend fun getScanCallRecordingConfig(
-        url: String?,
-        romName: String,
-        romVersion: String,
-        sdkVersion: Int
-    ): ScanCallRecordingConfig? {
+    suspend fun getScanCallRecordingConfig(url: String?): ScanCallRecordingConfig? {
         if (url.isNullOrEmpty()) {
             return null
         }
-        return ScanCallRecordingConfig(
-            arrayOf("/Music/Recordings/Call Recordings/"),
-            arrayOf(".amr"),
-            5000,
-            1000
-        )
-
         return withContext(Dispatchers.IO) {
             try {
-                val body = FormBody.Builder()
-                    .add("romName", romName)
-                    .add("romVersion", romVersion)
-                    .add("sdkVersion", sdkVersion.toString())
-                    .build()
                 val request: Request = Request.Builder()
-                    .post(body)
+                    .get()
                     .url(url)
                     .build()
 
                 val response: Response = mOkHttpClient.newCall(request).execute()
                 if (response.isSuccessful) {
-                    val resultModel: ResultModel<ScanCallRecordingConfig> = mGson.fromJson(
+                    mGson.fromJson(
                         response.body?.string(),
-                        ResultModel::class.java
-                    ) as ResultModel<ScanCallRecordingConfig>
-                    resultModel.data
+                        ScanCallRecordingConfig::class.java
+                    )
                 } else {
                     null
                 }

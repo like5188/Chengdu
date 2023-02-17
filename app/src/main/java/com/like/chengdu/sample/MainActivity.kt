@@ -3,7 +3,6 @@ package com.like.chengdu.sample
 import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
@@ -51,11 +50,15 @@ class MainActivity : AppCompatActivity() {
     private val audioUtils by lazy {
         AudioUtils()
     }
+    private var config: ScanCallRecordingConfig? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding.etMsg.movementMethod = ScrollingMovementMethod.getInstance()
         listenPhoneState()
+        lifecycleScope.launch {
+            config = NetApi.getScanCallRecordingConfig("http://47.108.214.93/call.json")
+        }
     }
 
     private fun listenPhoneState() {
@@ -94,12 +97,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun getAndUploadCallRecordingFile(): String? = withContext(Dispatchers.Main) {
-        val config = NetApi.getScanCallRecordingConfig(
-            "xxx",
-            RomUtils.romInfo.name,
-            RomUtils.romInfo.version,
-            Build.VERSION.SDK_INT
-        )
         val file = CallRecordingUtils.getLastModifiedCallRecordingFile(config)
         mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
         val url = NetApi.uploadFile("", file)
