@@ -18,15 +18,17 @@ object CallRecordingUtils {
     @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
     suspend fun getLastModifiedCallRecordingFile(config: ScanCallRecordingConfig?): File? =
         withContext(Dispatchers.IO) {
+            val startTime = System.currentTimeMillis()
             try {
                 val c = config ?: ScanCallRecordingConfig()
-                Log.i("TAG", c.toString())
+                Log.d("TAG", c.toString())
                 val parent = Environment.getExternalStorageDirectory()
                 val filePaths = c.getFilePaths()
                 val scanDelay = c.getScanDelay()
                 val currentTimeMillis = System.currentTimeMillis()
                 delay(scanDelay)
                 filePaths.forEach { filePath ->
+                    Log.v("TAG", "扫描：$filePath")
                     val dir = File(parent, filePath)
                     if (dir.exists() && dir.isDirectory) {
                         val file = dir.listFiles()?.sortedByDescending {
@@ -39,12 +41,15 @@ object CallRecordingUtils {
                             )
                         }
                         if (file != null) {
+                            Log.i("TAG", "扫描到文件：${file.absolutePath}")
                             return@withContext file
                         }
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                Log.i("TAG", "扫描耗时：${System.currentTimeMillis() - startTime}毫秒")
             }
             null
         }
