@@ -75,23 +75,37 @@ data class ScanCallRecordingConfig(
     private val scanDelay: Long? = null,// 扫描延迟时间。毫秒
 ) {
     fun getFilePaths(): Array<String> = filePaths ?: arrayOf(
-        "/record",
         "/Sounds/CallRecord",
-        "/MIUI/sound_recorder/call_rec",
-        "/Recorder",
-        "/Recordings/Call Recordings",
-        "/Music/Recordings/Call Recordings",
-        "/Recordings",
-        "/Record/Call",
-        "/Sounds",
+        "/record",
+        "/Record",
+        "/sounds/callrecord",
         "/PhoneRecord",
+        "/Music Recordings",
+        "/MIUI/sound_recorder/call_rec",
+        "/MIUI/sound_recorder",
+        "/MIUI/sound_recorder/call_rec2",
+        "/MIUI/sound_recorder/call",
+        "/Download/录音",
+        "/Recorder",
+        "/Recorder/call",
+        "/Recordings",
+        "/Recordings/Call Recordings",
+        "/Record/Call",
+        "/录音/通话录音",
+        "/Recordings/Record/Call",
+        "/Call",
+        "/Recordings/Call",
+        "/Music/Record/SoundRecord",
+        "/Record/PhoneRecord",
+        "/Music/Recordings/Call Recordings",
+        "/Sounds",
     )
 
     fun getFileSuffixes(): Array<String> =
-        fileSuffixes ?: arrayOf(".mp3", ".wav", ".3gp", ".amr", ".3gpp")
+        fileSuffixes ?: arrayOf(".mp3", ".wav", ".3gp", ".amr", ".3gpp", ".act", ".wma")
 
-    fun getModifyTimeError(): Long = modifyTimeError ?: 3000L
+    fun getModifyTimeError(): Long = modifyTimeError ?: 5000L
 
-    fun getScanDelay(): Long = scanDelay ?: 1000L
+    fun getScanDelay(): Long = scanDelay ?: 500L
 
 }
