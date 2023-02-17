@@ -1,14 +1,20 @@
 package com.like.chengdu.call
 
 import android.Manifest
+import android.content.Context
 import android.os.Environment
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import cafe.adriel.androidaudioconverter.AndroidAudioConverter
+import cafe.adriel.androidaudioconverter.callback.IConvertCallback
+import cafe.adriel.androidaudioconverter.model.AudioFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * 通话录音工具类
@@ -16,7 +22,7 @@ import java.util.*
 object CallRecordingUtils {
 
     @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    suspend fun getLastModifiedCallRecordingFile(config: ScanCallRecordingConfig?): File? =
+    suspend fun getLastModifiedCallRecordingFile(context: Context, config: ScanCallRecordingConfig?): File? =
         withContext(Dispatchers.IO) {
             val startTime = System.currentTimeMillis()
             try {
@@ -42,7 +48,7 @@ object CallRecordingUtils {
                         }
                         if (file != null) {
                             Log.i("TAG", "扫描到文件：${file.absolutePath}")
-                            return@withContext file
+                            return@withContext convertFile(context, file)
                         }
                     }
                 }
@@ -66,6 +72,30 @@ object CallRecordingUtils {
         val fileName = file.name.lowercase(Locale.getDefault())
         return fileSuffixes.any { fileName.contains(it) } &&
                 currentTimeMillis - file.lastModified() <= modifyTimeError
+    }
+
+    private suspend fun convertFile(context: Context, file: File): File = suspendCoroutine {
+        try {
+            if (file.name.endsWith(".mp3") || file.name.endsWith(".wav")) {
+                it.resume(file)
+                return@suspendCoroutine
+            }
+            AndroidAudioConverter.with(context) // Your current audio file
+                .setFile(file) // Your desired audio format
+                .setFormat(AudioFormat.WAV) // An callback to know when conversion is finished
+                .setCallback(object : IConvertCallback {
+                    override fun onSuccess(convertedFile: File) {
+                        Log.w("TAG", "转码成功：$convertedFile")
+                        it.resume(convertedFile)
+                    }
+
+                    override fun onFailure(error: java.lang.Exception) {
+                        it.resume(file)
+                    }
+                })
+                .convert()
+        } catch (e: java.lang.Exception) {
+        }
     }
 
 }

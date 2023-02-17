@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun getAndUploadCallRecordingFile(): String? = withContext(Dispatchers.Main) {
-        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(config)
+        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(this@MainActivity, config)
         mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
         val url = NetApi.uploadFile("", file)
         if (url != null) {
