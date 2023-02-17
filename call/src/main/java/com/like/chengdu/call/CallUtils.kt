@@ -84,8 +84,8 @@ object CallUtils {
  * 通话记录
  */
 data class Call(
-    val name: String?,
-    val number: String?,//号码
+    val name: String?,//联系人名称
+    val number: String?,//被叫号码
     val date: Long?,//创建时间点
     val duration: Int?,//通话时长
     var recordingFileUrl: String? = null// 录音文件网络地址
