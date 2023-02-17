@@ -84,12 +84,17 @@ object CallUtils {
  * 通话记录
  */
 data class Call(
-    val name: String?,//联系人名称
+    val name: String?,//联系人
     val number: String?,//被叫号码
-    val date: Long?,//创建时间点
+    val dateOfCallOccurred: Long?,//开始时间
     val duration: Int?,//通话时长
-    var recordingFileUrl: String? = null// 录音文件网络地址
 ) {
+    var recordingFileUrl: String? = null//录音文件网络地址
+    var dateOfCallConnected: Long? = null//接通时间
+    var dateOfCallHungUp: Long? = null//结束时间
+    var reasonOfHungUp: String? = null//挂断原因
+    var callState: String? = null//呼叫状态
+    val xxx1: Int? = null//持续时间
 
     companion object {
         fun getProjection() = arrayOf(
@@ -115,7 +120,17 @@ data class Call(
     }
 
     override fun toString(): String {
-        return "name=$name, number=$number, date=${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)}, duration=${duration}秒"
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        return "联系人=$name, " +
+                "被叫号码=$number, " +
+                "呼叫状态=$callState, " +
+                "开始时间=${sdf.format(dateOfCallOccurred)}, " +
+                "接通时间=${sdf.format(dateOfCallConnected)}, " +
+                "结束时间=${sdf.format(dateOfCallHungUp)}, " +
+                "通话时长=${duration}秒, " +
+                "持续时间=${xxx1}秒, " +
+                "挂断原因=$reasonOfHungUp, " +
+                "录音文件=$recordingFileUrl"
     }
 
 }

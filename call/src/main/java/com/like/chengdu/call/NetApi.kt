@@ -40,11 +40,10 @@ object NetApi {
 
         return withContext(Dispatchers.IO) {
             try {
-                val body: MultipartBody = MultipartBody.Builder()
-                    .setType("multipart/form-data".toMediaType())
-                    .addFormDataPart("romName", romName)
-                    .addFormDataPart("romVersion", romVersion)
-                    .addFormDataPart("sdkVersion", sdkVersion.toString())
+                val body = FormBody.Builder()
+                    .add("romName", romName)
+                    .add("romVersion", romVersion)
+                    .add("sdkVersion", sdkVersion.toString())
                     .build()
                 val request: Request = Request.Builder()
                     .post(body)
@@ -82,13 +81,7 @@ object NetApi {
 
         return withContext(Dispatchers.IO) {
             try {
-                val body: MultipartBody = MultipartBody.Builder()
-                    .setType("multipart/form-data".toMediaType())
-                    .addFormDataPart("name", call.name.toString())
-                    .addFormDataPart("number", call.number.toString())
-                    .addFormDataPart("date", call.date.toString())
-                    .addFormDataPart("duration", call.duration.toString())
-                    .build()
+                val body = mGson.toJson(call).toRequestBody("application/json;charset=utf-8".toMediaType())
                 val request: Request = Request.Builder()
                     .post(body)
                     .url(url)

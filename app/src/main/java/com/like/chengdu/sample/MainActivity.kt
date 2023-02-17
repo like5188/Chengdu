@@ -71,10 +71,12 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
+            var dateOfCallConnected: Long? = null
             PhoneReceiver.listen(
                 this@MainActivity,
                 {
                     Logger.e("接听")
+                    dateOfCallConnected = System.currentTimeMillis()
                 },
                 {
                     Logger.e("挂断")
@@ -82,7 +84,9 @@ class MainActivity : AppCompatActivity() {
                         // 获取录音文件并上传
                         val url = getAndUploadCallRecordingFile()
                         // 获取通话记录并上传
-                        getAndUploadCall(it, url)
+                        val dateOfCallHungUp = System.currentTimeMillis()
+                        getAndUploadCall(it, url, dateOfCallConnected, dateOfCallHungUp)
+                        dateOfCallConnected = null
                     }
                 }
             )
@@ -107,10 +111,18 @@ class MainActivity : AppCompatActivity() {
         url
     }
 
-    private suspend fun getAndUploadCall(phoneNumber: String, url: String?) = withContext(Dispatchers.Main) {
-        val call = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, phoneNumber)
+    private suspend fun getAndUploadCall(
+        phoneNumber: String,
+        url: String?,
+        dateOfCallConnected: Long?,
+        dateOfCallHungUp: Long?
+    ) = withContext(Dispatchers.Main) {
+        val call = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, phoneNumber)?.apply {
+            this.recordingFileUrl = url
+            this.dateOfCallConnected = dateOfCallConnected
+            this.dateOfCallHungUp = dateOfCallHungUp
+        }
         mBinding.tvCall.text = call?.toString() ?: ""
-        call?.recordingFileUrl = url
         val result = NetApi.uploadCall("", call)
         if (result) {
             mBinding.tvCall.setTextColor(Color.parseColor("#00ff00"))
