@@ -5,16 +5,11 @@ import android.content.Context
 import android.os.Environment
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import cafe.adriel.androidaudioconverter.AndroidAudioConverter
-import cafe.adriel.androidaudioconverter.callback.IConvertCallback
-import cafe.adriel.androidaudioconverter.model.AudioFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * 通话录音工具类
@@ -74,28 +69,11 @@ object CallRecordingUtils {
                 currentTimeMillis - file.lastModified() <= modifyTimeError
     }
 
-    private suspend fun convertFile(context: Context, file: File): File = suspendCoroutine {
-        try {
-            if (file.name.endsWith(".mp3") || file.name.endsWith(".wav")) {
-                it.resume(file)
-                return@suspendCoroutine
-            }
-            AndroidAudioConverter.with(context) // Your current audio file
-                .setFile(file) // Your desired audio format
-                .setFormat(AudioFormat.WAV) // An callback to know when conversion is finished
-                .setCallback(object : IConvertCallback {
-                    override fun onSuccess(convertedFile: File) {
-                        Log.w("TAG", "转码成功：$convertedFile")
-                        it.resume(convertedFile)
-                    }
-
-                    override fun onFailure(error: java.lang.Exception) {
-                        it.resume(file)
-                    }
-                })
-                .convert()
-        } catch (e: java.lang.Exception) {
+    private suspend fun convertFile(context: Context, file: File): File = withContext(Dispatchers.IO) {
+        if (file.name.endsWith(".mp3") || file.name.endsWith(".wav")) {
+            return@withContext file
         }
+        AudioConverter.convert(file, "wav")
     }
 
 }
