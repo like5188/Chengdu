@@ -16,7 +16,6 @@ import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity() {
@@ -84,46 +83,52 @@ class MainActivity : AppCompatActivity() {
                 {
                     Logger.e("挂断")
                     lifecycleScope.launch(Dispatchers.Main) {
-                        // 获取录音文件并上传
-                        val url = getAndUploadCallRecordingFile()
-                        // 获取通话记录并上传
-                        val dateOfCallHungUp = System.currentTimeMillis()
-                        getAndUploadCall(it, url, dateOfCallConnected, dateOfCallHungUp)
-                        dateOfCallConnected = null
+                        // 获取通话记录
+                        val call = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.apply {
+                            this.dateOfCallConnected = dateOfCallConnected
+                            this.dateOfCallHungUp = System.currentTimeMillis()
+                            dateOfCallConnected = null
+                        }
+                        mBinding.tvCall.text = call?.toString() ?: ""
+                        if (call == null) return@launch
+
+                        // 获取录音文件
+                        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(this@MainActivity, config)
+                        mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
+
+                        if (file != null) {// 找到了录音文件
+                            call.recordingFile = file.absolutePath
+                            // 上传录音文件
+                            val url = NetApi.uploadFile("", file)
+                            updateCallRecordingFileTextColor(url != null)
+                            if (url != null) {// 成功
+                                call.recordingFileUrl = url
+                            }
+                        }
+                        // 上传通话记录
+                        val result = NetApi.uploadCall("", call)
+                        updateCallTextColor(result)
+                        if (!result) {
+                            DBHelper.getInstance(this@MainActivity)?.saveCall(call)
+                        }
                     }
                 }
             )
         }
     }
 
-    private suspend fun getAndUploadCallRecordingFile(): String? = withContext(Dispatchers.Main) {
-        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(this@MainActivity, config)
-        mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
-        val url = NetApi.uploadFile("", file)
-        if (url != null) {
+    private fun updateCallRecordingFileTextColor(uploadSuccess: Boolean) {
+        if (uploadSuccess) {// 成功
             mBinding.tvCallRecordingFile.setTextColor(Color.parseColor("#00ff00"))
-        } else {
+        } else {// 失败
             mBinding.tvCallRecordingFile.setTextColor(Color.parseColor("#ff0000"))
         }
-        url
     }
 
-    private suspend fun getAndUploadCall(
-        phoneNumber: String,
-        url: String?,
-        dateOfCallConnected: Long?,
-        dateOfCallHungUp: Long?
-    ) = withContext(Dispatchers.Main) {
-        val call = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, phoneNumber)?.apply {
-            this.recordingFileUrl = url
-            this.dateOfCallConnected = dateOfCallConnected
-            this.dateOfCallHungUp = dateOfCallHungUp
-        }
-        mBinding.tvCall.text = call?.toString() ?: ""
-        val result = NetApi.uploadCall("", call)
-        if (result) {
+    private fun updateCallTextColor(uploadSuccess: Boolean) {
+        if (uploadSuccess) {// 成功
             mBinding.tvCall.setTextColor(Color.parseColor("#00ff00"))
-        } else {
+        } else {// 失败
             mBinding.tvCall.setTextColor(Color.parseColor("#ff0000"))
         }
     }
@@ -157,7 +162,8 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            CallUtils.call(this@MainActivity, phone)
+//            CallUtils.call(this@MainActivity, phone)
+            Logger.printCollection(CallUtils.getLatestCalls(this@MainActivity, 10))
         }
     }
 

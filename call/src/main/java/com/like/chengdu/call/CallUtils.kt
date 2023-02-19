@@ -90,6 +90,7 @@ data class Call(
     val dateOfCallOccurred: Long?,//开始时间
     val duration: Int?,//通话时长
 ) {
+    var recordingFile: String? = null//录音文件本地地址
     var recordingFileUrl: String? = null//录音文件网络地址
     var dateOfCallConnected: Long? = null//接通时间
     var dateOfCallHungUp: Long? = null//结束时间
@@ -128,14 +129,15 @@ data class Call(
         return "id=$id,\n" +
                 "联系人=$name,\n" +
                 "被叫号码=$number,\n" +
-//                "呼叫状态=$callState,\n" +
                 "开始时间=${sdf.format(dateOfCallOccurred)},\n" +
+                "通话时长=${duration}秒,\n" +
+                "录音文件本地地址=$recordingFile,\n" +
+                "录音文件网络地址=$recordingFileUrl,\n" +
 //                "接通时间=${sdf.format(dateOfCallConnected)},\n" +
 //                "结束时间=${sdf.format(dateOfCallHungUp)},\n" +
-                "通话时长=${duration}秒,\n" +
-                "持续时间=${xxx1}秒,\n" +
                 "挂断原因=$reasonOfHungUp,\n" +
-                "录音文件=$recordingFileUrl"
+//                "呼叫状态=$callState,\n" +
+                "持续时间=${xxx1}秒"
     }
 
 }
