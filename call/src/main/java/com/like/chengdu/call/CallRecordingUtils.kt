@@ -81,7 +81,7 @@ object CallRecordingUtils {
 /**
  * 扫描通话录音文件的配置(由后台配置)
  */
-data class ScanCallRecordingConfig(
+class ScanCallRecordingConfig(
     private val filePaths: Array<String>? = null,// 通话录音文件路径。
     private val fileSuffixes: Array<String>? = null,// 通话录音文件后缀。
     private val modifyTimeError: Long? = null,// 修改时间与扫描文件时间的误差值。毫秒
