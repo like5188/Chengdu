@@ -65,12 +65,13 @@ object CallRecordingUtils {
         val fileSuffixes = config.getFileSuffixes()
         val modifyTimeError = config.getModifyTimeError()
         val fileName = file.name.lowercase(Locale.getDefault())
-        return fileSuffixes.any { fileName.contains(it) } &&
+        return fileSuffixes.any { fileName.endsWith(it) } &&
                 currentTimeMillis - file.lastModified() <= modifyTimeError
     }
 
     private suspend fun convertFile(context: Context, file: File): File = withContext(Dispatchers.IO) {
-        if (file.name.endsWith(".mp3") || file.name.endsWith(".wav")) {
+        val extension = file.extension
+        if (extension == "mp3" || extension == "wav") {
             return@withContext file
         }
         AudioConverter.convert(file, "wav")
