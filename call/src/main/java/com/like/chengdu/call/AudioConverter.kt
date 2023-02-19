@@ -12,7 +12,7 @@ import java.util.*
 object AudioConverter {
 
     suspend fun convert(file: File, format: String): File = withContext(Dispatchers.IO) {
-        if (!file.canRead()) {
+        if (!file.exists() || !file.canRead()) {
             return@withContext file
         }
         val convertedFile = replaceSuffix(file, format)
