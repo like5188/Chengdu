@@ -84,6 +84,7 @@ object CallUtils {
  * 通话记录
  */
 data class Call(
+    val id: Int?,
     val name: String?,//联系人
     val number: String?,//被叫号码
     val dateOfCallOccurred: Long?,//开始时间
@@ -98,6 +99,7 @@ data class Call(
 
     companion object {
         fun getProjection() = arrayOf(
+            CallLog.Calls._ID,
             CallLog.Calls.CACHED_NAME,
             CallLog.Calls.NUMBER,
             CallLog.Calls.DATE,
@@ -105,11 +107,13 @@ data class Call(
         )
 
         fun parse(cursor: Cursor): Call {
+            val idColumnIndex = cursor.getColumnIndex(CallLog.Calls._ID)
             val nameColumnIndex = cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)
             val numberColumnIndex = cursor.getColumnIndex(CallLog.Calls.NUMBER)
             val dateColumnIndex = cursor.getColumnIndex(CallLog.Calls.DATE)
             val durationColumnIndex = cursor.getColumnIndex(CallLog.Calls.DURATION)
             return Call(
+                if (idColumnIndex == -1) null else cursor.getInt(idColumnIndex),
                 if (nameColumnIndex == -1) null else cursor.getString(nameColumnIndex),
                 if (numberColumnIndex == -1) null else cursor.getString(numberColumnIndex),
                 if (dateColumnIndex == -1) null else cursor.getLong(dateColumnIndex),
@@ -121,12 +125,13 @@ data class Call(
 
     override fun toString(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-        return "联系人=$name,\n" +
+        return "id=$id,\n" +
+                "联系人=$name,\n" +
                 "被叫号码=$number,\n" +
-                "呼叫状态=$callState,\n" +
+//                "呼叫状态=$callState,\n" +
                 "开始时间=${sdf.format(dateOfCallOccurred)},\n" +
-                "接通时间=${sdf.format(dateOfCallConnected)},\n" +
-                "结束时间=${sdf.format(dateOfCallHungUp)},\n" +
+//                "接通时间=${sdf.format(dateOfCallConnected)},\n" +
+//                "结束时间=${sdf.format(dateOfCallHungUp)},\n" +
                 "通话时长=${duration}秒,\n" +
                 "持续时间=${xxx1}秒,\n" +
                 "挂断原因=$reasonOfHungUp,\n" +
