@@ -96,21 +96,9 @@ class MainActivity : AppCompatActivity() {
                         val file = CallRecordingUtils.getLastModifiedCallRecordingFile(this@MainActivity, config)
                         mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
 
-                        if (file != null) {// 找到了录音文件
-                            call.recordingFile = file.absolutePath
-                            // 上传录音文件
-                            val url = NetApi.uploadFile("", file)
-                            updateCallRecordingFileTextColor(url != null)
-                            if (url != null) {// 成功
-                                call.recordingFileUrl = url
-                            }
-                        }
-                        // 上传通话记录
-                        val result = NetApi.uploadCall("", call)
-                        updateCallTextColor(result)
-                        if (!result) {
-                            DBHelper.getInstance(this@MainActivity)?.saveCall(call)
-                        }
+                        val uploadResult = UploadUtils.upload(this@MainActivity, call, file)
+                        updateCallRecordingFileTextColor(uploadResult.first)
+                        updateCallTextColor(uploadResult.second)
                     }
                 }
             )

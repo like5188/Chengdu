@@ -41,28 +41,19 @@ object UploadUtils {
             val id = call.id ?: continue
             val recordingFileUrl = call.recordingFileUrl
             val recordingFile = call.recordingFile
-            if (!recordingFileUrl.isNullOrEmpty()) {// 文件已经上传
-                // 上传通话记录
-                if (NetApi.uploadCall("", call)) {// 成功
-                    dbHelper.deleteCallById(id)
-                }
-            } else if (!recordingFile.isNullOrEmpty()) {// 文件没有上传
+            if (!recordingFile.isNullOrEmpty() && recordingFileUrl.isNullOrEmpty()) {// 有录音文件，并且没有成功上传
                 // 上传录音文件
                 val url = NetApi.uploadFile("", File(recordingFile))
                 if (url != null) {// 成功
                     call.recordingFileUrl = url
                     dbHelper.updateCallRecordingFileUrlById(id, url)
                 }
-                // 上传通话记录
-                if (NetApi.uploadCall("", call)) {// 成功
-                    dbHelper.deleteCallById(id)
-                }
-            } else {
-                // 上传通话记录
-                if (NetApi.uploadCall("", call)) {// 成功
-                    dbHelper.deleteCallById(id)
-                }
+            }
+            // 上传通话记录
+            if (NetApi.uploadCall("", call)) {// 成功
+                dbHelper.deleteCallById(id)
             }
         }
     }
+
 }
