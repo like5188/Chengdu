@@ -150,8 +150,7 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-//            CallUtils.call(this@MainActivity, phone)
-            Logger.printCollection(CallUtils.getLatestCalls(this@MainActivity, 10))
+            CallUtils.call(this@MainActivity, phone)
         }
     }
 
