@@ -90,7 +90,10 @@ class MainActivity : AppCompatActivity() {
                             CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.apply {
                                 this.dateOfCallConnected = dateOfCallConnected
                                 this.dateOfCallHungUp = hungUpTime
-                                this.startToFinishTime = hungUpTime - callStartTime!!
+                                callStartTime?.let {
+                                    this.startToFinishTime = hungUpTime - it
+                                }
+                                callStartTime = null
                                 dateOfCallConnected = null
                             }
                         mBinding.tvCall.text = call?.toString() ?: ""
