@@ -24,7 +24,7 @@ class DBHelper private constructor(context: Context) : SQLiteOpenHelper(context,
                     "dateOfCallHungUp INTEGER," +
                     "reasonOfHungUp VARCHAR," +
                     "callState VARCHAR," +
-                    "xxx1  INTEGER)"
+                    "startToFinishTime INTEGER)"
         )
     }
 
@@ -62,7 +62,7 @@ class DBHelper private constructor(context: Context) : SQLiteOpenHelper(context,
         cv.put("dateOfCallHungUp", call.dateOfCallHungUp)
         cv.put("reasonOfHungUp", call.reasonOfHungUp)
         cv.put("callState", call.callState)
-        cv.put("xxx1", call.xxx1)
+        cv.put("startToFinishTime", call.startToFinishTime)
         writableDatabase.insert("call", null, cv) != -1L
     }
 
