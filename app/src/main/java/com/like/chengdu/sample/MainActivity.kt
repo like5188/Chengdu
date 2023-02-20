@@ -2,8 +2,10 @@ package com.like.chengdu.sample
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.database.ContentObserver
 import android.graphics.Color
 import android.os.Bundle
+import android.provider.CallLog
 import android.text.method.ScrollingMovementMethod
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +18,7 @@ import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity() {
@@ -83,31 +86,50 @@ class MainActivity : AppCompatActivity() {
                 {
                     Logger.e("挂断")
                     val hungUpTime = System.currentTimeMillis()
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        // 获取通话记录
-                        val call =
-                            CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.apply {
-                                this.dateOfCallConnected = dateOfCallConnected
-                                this.dateOfCallHungUp = hungUpTime
-                                this.dateOfCallOccurred?.let {
-                                    this.startToFinishTime = hungUpTime - it
+                    val callLogObserver = object : ContentObserver(null) {
+
+                        override fun onChange(selfChange: Boolean) {
+                            super.onChange(selfChange)
+                            contentResolver.unregisterContentObserver(this)
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                // 获取通话记录
+                                val call =
+                                    CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)
+                                        ?.apply {
+                                            this.dateOfCallConnected = dateOfCallConnected
+                                            this.dateOfCallHungUp = hungUpTime
+                                            this.dateOfCallOccurred?.let {
+                                                this.startToFinishTime = hungUpTime - it
+                                            }
+                                            dateOfCallConnected = null
+                                        }
+                                withContext(Dispatchers.Main) {
+                                    mBinding.tvCall.text = call?.toString() ?: ""
                                 }
-                                dateOfCallConnected = null
+                                if (call == null) return@launch
+
+                                // 获取录音文件
+                                val file = CallRecordingUtils.getLastModifiedCallRecordingFile(
+                                    this@MainActivity,
+                                    config
+                                )
+                                withContext(Dispatchers.Main) {
+                                    mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
+                                }
+
+                                val uploadResult = UploadUtils.upload(this@MainActivity, call, file)
+                                withContext(Dispatchers.Main) {
+                                    updateCallRecordingFileTextColor(uploadResult.first)
+                                    updateCallTextColor(uploadResult.second)
+                                }
                             }
-                        mBinding.tvCall.text = call?.toString() ?: ""
-                        if (call == null) return@launch
-
-                        // 获取录音文件
-                        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(
-                            this@MainActivity,
-                            config
-                        )
-                        mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
-
-                        val uploadResult = UploadUtils.upload(this@MainActivity, call, file)
-                        updateCallRecordingFileTextColor(uploadResult.first)
-                        updateCallTextColor(uploadResult.second)
+                        }
                     }
+                    contentResolver.registerContentObserver(
+                        CallLog.Calls.CONTENT_URI,
+                        true,
+                        callLogObserver
+                    )
                 }
             )
         }
