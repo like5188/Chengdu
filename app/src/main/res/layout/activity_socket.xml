@@ -22,7 +22,7 @@
                 android:id="@+id/etHost"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="free.idcfengye.com" />
+                android:text="192.168.31.112" />
         </LinearLayout>
 
         <LinearLayout
@@ -41,7 +41,7 @@
                 android:id="@+id/etPort"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="10371" />
+                android:text="60000" />
         </LinearLayout>
 
         <LinearLayout
