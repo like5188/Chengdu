@@ -5,8 +5,6 @@ import android.annotation.SuppressLint
 import android.database.ContentObserver
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Environment
-import android.os.FileObserver
 import android.provider.CallLog
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -16,8 +14,9 @@ import com.like.chengdu.call.*
 import com.like.chengdu.sample.databinding.ActivityCallBinding
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
+import kotlinx.coroutines.withContext
 
 @SuppressLint("MissingPermission")
 class CallActivity : AppCompatActivity() {
@@ -28,35 +27,19 @@ class CallActivity : AppCompatActivity() {
         AudioUtils()
     }
     private var config: ScanCallRecordingConfig? = null
-//    private val fileObserver by lazy {
-//        object : FileObserver(
-//            File(
-//                Environment.getExternalStorageDirectory(),
-//                "/Music/Recordings/Call Recordings"
-//            )
-//        ) {
-//            override fun onEvent(event: Int, path: String?) {
-//                val action = event and ALL_EVENTS
-//                println("path:$path action:$action")
-////                when (action) {
-////                    ACCESS -> println("event: 文件或目录被访问, path: $path")
-////                    DELETE -> println("event: 文件或目录被删除, path: $path")
-////                    OPEN -> println("event: 文件或目录被打开, path: $path")
-////                    MODIFY -> println("event: 文件或目录被修改, path: $path")
-////                    CREATE -> println("event: 文件或目录被创建, path: $path")
-////                }
-////                this.stopWatching()
-//            }
-//        }
-//    }
+    private val callRecordingFileUtils by lazy {
+        CallRecordingFileUtils()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding
-        listenPhoneState()
         lifecycleScope.launch {
-            config = NetApi.getScanCallRecordingConfig("http://47.108.214.93/call.json")
+            config = NetApi.getScanCallRecordingConfig("http://47.108.214.93/call.json")?.apply {
+                callRecordingFileUtils.init(this)
+            }
         }
+        listenPhoneState()
     }
 
     private fun listenPhoneState() {
@@ -72,7 +55,6 @@ class CallActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-//            fileObserver.startWatching()
 
             var dateOfCallConnected: Long? = null
             PhoneReceiver.listen(
@@ -83,74 +65,39 @@ class CallActivity : AppCompatActivity() {
                 },
                 {
                     Logger.e("挂断")
-//                    val hungUpTime = System.currentTimeMillis()
-//                    listenOnceCallLogChange {
-//                        lifecycleScope.launch(Dispatchers.IO) {
-//                            // 获取通话记录
-//                            val call =
-//                                CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.apply {
-//                                    this.dateOfCallConnected = dateOfCallConnected
-//                                    this.dateOfCallHungUp = hungUpTime
-//                                    this.dateOfCallOccurred?.let {
-//                                        this.startToFinishTime = hungUpTime - it
-//                                    }
-//                                    dateOfCallConnected = null
-//                                }
-//                            withContext(Dispatchers.Main) {
-//                                mBinding.tvCall.text = call?.toString() ?: ""
-//                            }
-//                            if (call == null) return@launch
-//
-//                            // 获取录音文件
-//                            val file = CallRecordingUtils.getLastModifiedCallRecordingFile(
-//                                this@MainActivity,
-//                                config
-//                            )
-//                            withContext(Dispatchers.Main) {
-//                                mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
-//                            }
-//
-//                            val uploadResult = UploadUtils.upload(this@MainActivity, call, file)
-//                            withContext(Dispatchers.Main) {
-//                                updateCallRecordingFileTextColor(uploadResult.first)
-//                                updateCallTextColor(uploadResult.second)
-//                            }
-//                        }
-//                    }
-                }
-            )
-        }
-    }
-
-    private fun listenCallRecordingFile() {
-
-    }
-
-    private fun listenOnceCallRecordingDirChange(onChanged: () -> Unit) {
-        val parent = Environment.getExternalStorageDirectory()
-        val fileObservers = mutableListOf<FileObserver>()
-        config?.getFilePaths()?.forEach { filePath ->
-            val dir = File(parent, filePath)
-            if (dir.exists() && dir.isDirectory) {
-                fileObservers.add(
-                    object : FileObserver(dir) {
-                        override fun onEvent(event: Int, path: String?) {
-                            println("event: $event, path: $path")
-                            when (event and ALL_EVENTS) {
-                                ACCESS -> println("event: 文件或目录被访问, path: $path")
-                                DELETE -> println("event: 文件或目录被删除, path: $path")
-                                OPEN -> println("event: 文件或目录被打开, path: $path")
-                                MODIFY -> println("event: 文件或目录被修改, path: $path")
-                                CREATE -> println("event: 文件或目录被创建, path: $path")
+                    val hungUpTime = System.currentTimeMillis()
+                    listenOnceCallLogChange {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            // 获取通话记录
+                            val call =
+                                CallUtils.getLatestCallByPhoneNumber(this@CallActivity, it)?.apply {
+                                    this.dateOfCallConnected = dateOfCallConnected
+                                    this.dateOfCallHungUp = hungUpTime
+                                    this.dateOfCallOccurred?.let {
+                                        this.startToFinishTime = (hungUpTime - it) / 1000
+                                    }
+                                    dateOfCallConnected = null
+                                }
+                            withContext(Dispatchers.Main) {
+                                mBinding.tvCall.text = call?.toString() ?: ""
                             }
-                            this.stopWatching()
+                            if (call == null) return@launch
+
+                            // 获取录音文件
+                            val file = callRecordingFileUtils.stop()
+                            withContext(Dispatchers.Main) {
+                                mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
+                            }
+
+                            val uploadResult = UploadUtils.upload(this@CallActivity, call, file)
+                            withContext(Dispatchers.Main) {
+                                updateCallRecordingFileTextColor(uploadResult.first)
+                                updateCallTextColor(uploadResult.second)
+                            }
                         }
                     }
-                )
-            }
-        }
-        fileObservers.forEach {
-            it.startWatching()
+                }
+            )
         }
     }
 
@@ -201,6 +148,7 @@ class CallActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
+            callRecordingFileUtils.start()
             CallUtils.call(this@CallActivity, phone)
         }
     }
