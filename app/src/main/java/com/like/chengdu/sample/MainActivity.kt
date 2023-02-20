@@ -50,7 +50,6 @@ class MainActivity : AppCompatActivity() {
         AudioUtils()
     }
     private var config: ScanCallRecordingConfig? = null
-    private var callStartTime: Long? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,10 +89,9 @@ class MainActivity : AppCompatActivity() {
                             CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.apply {
                                 this.dateOfCallConnected = dateOfCallConnected
                                 this.dateOfCallHungUp = hungUpTime
-                                callStartTime?.let {
+                                this.dateOfCallOccurred?.let {
                                     this.startToFinishTime = hungUpTime - it
                                 }
-                                callStartTime = null
                                 dateOfCallConnected = null
                             }
                         mBinding.tvCall.text = call?.toString() ?: ""
@@ -160,7 +158,6 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
-            callStartTime = System.currentTimeMillis()
             CallUtils.call(this@MainActivity, phone)
         }
     }
