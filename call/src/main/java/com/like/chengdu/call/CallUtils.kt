@@ -88,15 +88,15 @@ data class Call(
     val name: String?,//联系人
     val number: String?,//被叫号码
     val dateOfCallOccurred: Long?,//开始时间
-    val duration: Int?,//通话时长
+    val duration: Int?,//通话时长 接通才有，接通后到挂断的时间。
 ) {
     var recordingFile: String? = null//录音文件本地地址
     var recordingFileUrl: String? = null//录音文件网络地址
     var dateOfCallConnected: Long? = null//接通时间
     var dateOfCallHungUp: Long? = null//结束时间
-    var reasonOfHungUp: String? = null//挂断原因
-    var callState: String? = null//呼叫状态
-    val xxx1: Int? = null//持续时间
+    var reasonOfHungUp: String? = null//挂断原因 0: "未知",1: "呼叫失败",2: "我方取消通话",3: "对方挂断",4: "我方挂断",
+    var callState: String? = null//呼叫状态 已接通 未接通
+    val startToFinishTime: Int? = null//持续时间 开始拨打到挂断的时间。
 
     companion object {
         fun getProjection() = arrayOf(
@@ -137,7 +137,7 @@ data class Call(
 //                "结束时间=${sdf.format(dateOfCallHungUp)},\n" +
                 "挂断原因=$reasonOfHungUp,\n" +
 //                "呼叫状态=$callState,\n" +
-                "持续时间=${xxx1}秒"
+                "持续时间=${startToFinishTime}秒"
     }
 
 }

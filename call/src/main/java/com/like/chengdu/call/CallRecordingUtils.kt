@@ -71,6 +71,7 @@ object CallRecordingUtils {
 
     private suspend fun convertFile(context: Context, file: File): File = withContext(Dispatchers.IO) {
         val extension = file.extension
+        // 录音文件格式作最好都转为：mp3,  wav
         if (extension == "mp3" || extension == "wav") {
             return@withContext file
         }
