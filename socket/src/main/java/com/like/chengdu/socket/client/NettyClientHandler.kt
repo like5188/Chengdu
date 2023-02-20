@@ -6,7 +6,7 @@ import io.netty.channel.ChannelHandlerAdapter
 import io.netty.channel.ChannelHandlerContext
 import io.netty.util.CharsetUtil
 
-class NettyClientHandler(private val nettyClient: NettyClient) : ChannelHandlerAdapter() {
+internal class NettyClientHandler(private val nettyClient: NettyClient) : ChannelHandlerAdapter() {
     private val mGson by lazy {
         Gson()
     }
