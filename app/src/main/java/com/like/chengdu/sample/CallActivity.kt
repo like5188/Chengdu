@@ -2,10 +2,13 @@ package com.like.chengdu.sample
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.database.ContentObserver
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.provider.CallLog
+import android.text.method.ScrollingMovementMethod
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -14,9 +17,12 @@ import com.like.chengdu.call.*
 import com.like.chengdu.sample.databinding.ActivityCallBinding
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
+import com.like.common.util.storage.external.SafUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+
 
 @SuppressLint("MissingPermission")
 class CallActivity : AppCompatActivity() {
@@ -33,7 +39,7 @@ class CallActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding
+        mBinding.etMsg.movementMethod = ScrollingMovementMethod.getInstance()
         lifecycleScope.launch {
             config = NetApi.getScanCallRecordingConfig("http://47.108.214.93/call.json")?.apply {
                 callRecordingFileUtils.init(this)
@@ -173,6 +179,21 @@ class CallActivity : AppCompatActivity() {
 
     fun pause(view: View) {
         audioUtils.pause()
+    }
+
+    fun getCalls(view: View) {
+        mBinding.etMsg.setText("")
+        lifecycleScope.launch(Dispatchers.Main) {
+            CallUtils.getLatestCalls(this@CallActivity, 10).forEach {
+                val oldMsg = mBinding.etMsg.text?.toString()
+                val text = if (oldMsg.isNullOrEmpty()) {
+                    it.toString()
+                } else {
+                    oldMsg + "\n\n" + it.toString()
+                }
+                mBinding.etMsg.setText(text)
+            }
+        }
     }
 
     override fun onDestroy() {
