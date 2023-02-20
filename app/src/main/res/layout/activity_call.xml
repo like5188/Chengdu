@@ -113,7 +113,7 @@
             android:layout_marginTop="30dp"
             android:layout_marginEnd="30dp"
             android:onClick="getCalls"
-            android:text="获取所有通话记录"
+            android:text="获取系统数据库中的前10条通话记录"
             android:textAllCaps="false" />
 
         <EditText

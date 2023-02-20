@@ -83,7 +83,7 @@ class CallActivity : AppCompatActivity() {
                                 dateOfCallConnected = null
                             }
                             withContext(Dispatchers.Main) {
-                                mBinding.tvCall.text = call?.toString() ?: ""
+                                mBinding.tvCall.text = call?.localCallToString() ?: ""
                             }
                             if (call == null) return@listenOnceCallLogChange
 
@@ -188,9 +188,9 @@ class CallActivity : AppCompatActivity() {
             CallUtils.getLatestCalls(this@CallActivity, 10).forEach {
                 val oldMsg = mBinding.etMsg.text?.toString()
                 val text = if (oldMsg.isNullOrEmpty()) {
-                    it.toString()
+                    it.systemCallToString()
                 } else {
-                    oldMsg + "\n\n" + it.toString()
+                    oldMsg + "\n\n" + it.systemCallToString()
                 }
                 mBinding.etMsg.setText(text)
             }

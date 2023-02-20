@@ -124,7 +124,7 @@ data class Call(
 
     }
 
-    override fun toString(): String {
+    fun localCallToString(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         return "id=$id,\n" +
                 "联系人=$name,\n" +
@@ -138,6 +138,15 @@ data class Call(
                 "挂断原因=$reasonOfHungUp,\n" +
 //                "呼叫状态=$callState,\n" +
                 "持续时间=${startToFinishTime}秒"
+    }
+
+    fun systemCallToString(): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        return "id=$id,\n" +
+                "联系人=$name,\n" +
+                "被叫号码=$number,\n" +
+                "开始时间=${sdf.format(dateOfCallOccurred)},\n" +
+                "通话时长=${duration}秒"
     }
 
 }
