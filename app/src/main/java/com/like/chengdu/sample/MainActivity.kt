@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         AudioUtils()
     }
     private var config: ScanCallRecordingConfig? = null
+    private var callStartTime: Long? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,18 +83,24 @@ class MainActivity : AppCompatActivity() {
                 },
                 {
                     Logger.e("挂断")
+                    val hungUpTime = System.currentTimeMillis()
                     lifecycleScope.launch(Dispatchers.Main) {
                         // 获取通话记录
-                        val call = CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.apply {
-                            this.dateOfCallConnected = dateOfCallConnected
-                            this.dateOfCallHungUp = System.currentTimeMillis()
-                            dateOfCallConnected = null
-                        }
+                        val call =
+                            CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.apply {
+                                this.dateOfCallConnected = dateOfCallConnected
+                                this.dateOfCallHungUp = hungUpTime
+                                this.startToFinishTime = hungUpTime - callStartTime!!
+                                dateOfCallConnected = null
+                            }
                         mBinding.tvCall.text = call?.toString() ?: ""
                         if (call == null) return@launch
 
                         // 获取录音文件
-                        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(this@MainActivity, config)
+                        val file = CallRecordingUtils.getLastModifiedCallRecordingFile(
+                            this@MainActivity,
+                            config
+                        )
                         mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
 
                         val uploadResult = UploadUtils.upload(this@MainActivity, call, file)
@@ -150,6 +157,7 @@ class MainActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
+            callStartTime = System.currentTimeMillis()
             CallUtils.call(this@MainActivity, phone)
         }
     }

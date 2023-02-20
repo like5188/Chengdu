@@ -96,7 +96,7 @@ data class Call(
     var dateOfCallHungUp: Long? = null//结束时间
     var reasonOfHungUp: String? = null//挂断原因 0: "未知",1: "呼叫失败",2: "我方取消通话",3: "对方挂断",4: "我方挂断",
     var callState: String? = null//呼叫状态 已接通 未接通
-    val startToFinishTime: Int? = null//持续时间 开始拨打到挂断的时间。
+    var startToFinishTime: Long? = null//持续时间 开始拨打到挂断的时间。
 
     companion object {
         fun getProjection() = arrayOf(
