@@ -86,53 +86,61 @@ class MainActivity : AppCompatActivity() {
                 {
                     Logger.e("挂断")
                     val hungUpTime = System.currentTimeMillis()
-                    val callLogObserver = object : ContentObserver(null) {
-
-                        override fun onChange(selfChange: Boolean) {
-                            super.onChange(selfChange)
-                            contentResolver.unregisterContentObserver(this)
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                // 获取通话记录
-                                val call =
-                                    CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)
-                                        ?.apply {
-                                            this.dateOfCallConnected = dateOfCallConnected
-                                            this.dateOfCallHungUp = hungUpTime
-                                            this.dateOfCallOccurred?.let {
-                                                this.startToFinishTime = hungUpTime - it
-                                            }
-                                            dateOfCallConnected = null
-                                        }
-                                withContext(Dispatchers.Main) {
-                                    mBinding.tvCall.text = call?.toString() ?: ""
+                    listenOnceCallLogChange {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            // 获取通话记录
+                            val call =
+                                CallUtils.getLatestCallByPhoneNumber(this@MainActivity, it)?.apply {
+                                    this.dateOfCallConnected = dateOfCallConnected
+                                    this.dateOfCallHungUp = hungUpTime
+                                    this.dateOfCallOccurred?.let {
+                                        this.startToFinishTime = hungUpTime - it
+                                    }
+                                    dateOfCallConnected = null
                                 }
-                                if (call == null) return@launch
+                            withContext(Dispatchers.Main) {
+                                mBinding.tvCall.text = call?.toString() ?: ""
+                            }
+                            if (call == null) return@launch
 
-                                // 获取录音文件
-                                val file = CallRecordingUtils.getLastModifiedCallRecordingFile(
-                                    this@MainActivity,
-                                    config
-                                )
-                                withContext(Dispatchers.Main) {
-                                    mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
-                                }
+                            // 获取录音文件
+                            val file = CallRecordingUtils.getLastModifiedCallRecordingFile(
+                                this@MainActivity,
+                                config
+                            )
+                            withContext(Dispatchers.Main) {
+                                mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
+                            }
 
-                                val uploadResult = UploadUtils.upload(this@MainActivity, call, file)
-                                withContext(Dispatchers.Main) {
-                                    updateCallRecordingFileTextColor(uploadResult.first)
-                                    updateCallTextColor(uploadResult.second)
-                                }
+                            val uploadResult = UploadUtils.upload(this@MainActivity, call, file)
+                            withContext(Dispatchers.Main) {
+                                updateCallRecordingFileTextColor(uploadResult.first)
+                                updateCallTextColor(uploadResult.second)
                             }
                         }
                     }
-                    contentResolver.registerContentObserver(
-                        CallLog.Calls.CONTENT_URI,
-                        true,
-                        callLogObserver
-                    )
                 }
             )
         }
+    }
+
+    /**
+     * 监听一次系统通话记录数据库的改变
+     */
+    private fun listenOnceCallLogChange(onChanged: () -> Unit) {
+        val callLogObserver = object : ContentObserver(null) {
+
+            override fun onChange(selfChange: Boolean) {
+                super.onChange(selfChange)
+                contentResolver.unregisterContentObserver(this)
+                onChanged.invoke()
+            }
+        }
+        contentResolver.registerContentObserver(
+            CallLog.Calls.CONTENT_URI,
+            true,
+            callLogObserver
+        )
     }
 
     private fun updateCallRecordingFileTextColor(uploadSuccess: Boolean) {
