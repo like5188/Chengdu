@@ -2,10 +2,8 @@ package com.like.chengdu.sample
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.database.ContentObserver
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.provider.CallLog
 import android.text.method.ScrollingMovementMethod
@@ -17,11 +15,12 @@ import com.like.chengdu.call.*
 import com.like.chengdu.sample.databinding.ActivityCallBinding
 import com.like.common.util.Logger
 import com.like.common.util.activityresultlauncher.requestMultiplePermissions
-import com.like.common.util.storage.external.SafUtils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 
 @SuppressLint("MissingPermission")
@@ -72,22 +71,21 @@ class CallActivity : AppCompatActivity() {
                 {
                     Logger.e("挂断")
                     val hungUpTime = System.currentTimeMillis()
-                    listenOnceCallLogChange {
-                        lifecycleScope.launch(Dispatchers.IO) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        listenOnceCallLogChange {
                             // 获取通话记录
-                            val call =
-                                CallUtils.getLatestCallByPhoneNumber(this@CallActivity, it)?.apply {
-                                    this.dateOfCallConnected = dateOfCallConnected
-                                    this.dateOfCallHungUp = hungUpTime
-                                    this.dateOfCallOccurred?.let {
-                                        this.startToFinishTime = (hungUpTime - it) / 1000
-                                    }
-                                    dateOfCallConnected = null
+                            val call = CallUtils.getLatestCallByPhoneNumber(this@CallActivity, it)?.apply {
+                                this.dateOfCallConnected = dateOfCallConnected
+                                this.dateOfCallHungUp = hungUpTime
+                                this.dateOfCallOccurred?.let {
+                                    this.startToFinishTime = (hungUpTime - it) / 1000
                                 }
+                                dateOfCallConnected = null
+                            }
                             withContext(Dispatchers.Main) {
                                 mBinding.tvCall.text = call?.toString() ?: ""
                             }
-                            if (call == null) return@launch
+                            if (call == null) return@listenOnceCallLogChange
 
                             // 获取录音文件
                             val file = callRecordingFileUtils.getCallRecordingFile()
@@ -110,13 +108,12 @@ class CallActivity : AppCompatActivity() {
     /**
      * 监听一次系统通话记录数据库的改变
      */
-    private fun listenOnceCallLogChange(onChanged: () -> Unit) {
+    private suspend fun listenOnceCallLogChange(onChanged: suspend () -> Unit) {
+        val stateFlow = MutableStateFlow(false)
         val callLogObserver = object : ContentObserver(null) {
-
             override fun onChange(selfChange: Boolean) {
                 super.onChange(selfChange)
-                contentResolver.unregisterContentObserver(this)
-                onChanged.invoke()
+                stateFlow.value = selfChange
             }
         }
         contentResolver.registerContentObserver(
@@ -124,6 +121,10 @@ class CallActivity : AppCompatActivity() {
             true,
             callLogObserver
         )
+        stateFlow.debounce(500).collectLatest {
+            contentResolver.unregisterContentObserver(callLogObserver)
+            onChanged.invoke()
+        }
     }
 
     private fun updateCallRecordingFileTextColor(uploadSuccess: Boolean) {
