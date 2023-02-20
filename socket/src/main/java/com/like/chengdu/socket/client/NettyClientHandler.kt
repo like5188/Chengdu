@@ -14,7 +14,7 @@ class NettyClientHandler(private val nettyClient: NettyClient) : ChannelHandlerA
      * @throws Exception
      */
     override fun channelActive(ctx: ChannelHandlerContext) {
-        val buf = Unpooled.copiedBuffer("Hello Server 到底".toByteArray(CharsetUtil.UTF_8))
+        val buf = Unpooled.copiedBuffer("Hello Server".toByteArray(CharsetUtil.UTF_8))
         ctx.writeAndFlush(buf)
     }
 
