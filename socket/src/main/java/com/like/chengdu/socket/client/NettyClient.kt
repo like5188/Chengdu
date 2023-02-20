@@ -41,8 +41,8 @@ class NettyClient(
      * @param port  服务器端口
      */
     @Synchronized
-    fun connect(host: String, port: Int) {
-        if (connectFlag == 0) {
+    fun connect(host: String?, port: Int?) {
+        if (connectFlag == 0 || host.isNullOrEmpty() || port == null || port > 65535 || port <= 0) {
             return
         }
         connectFlag = 0// 允许自动重连

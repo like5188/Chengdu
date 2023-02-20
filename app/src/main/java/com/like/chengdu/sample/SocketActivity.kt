@@ -46,11 +46,8 @@ class SocketActivity : AppCompatActivity() {
     }
 
     fun connect(view: View) {
-        val host = mBinding.etHost.text?.toString() ?: ""
-        val port = mBinding.etPort.text?.toString()?.toInt() ?: -1
-        if (host.isEmpty() || port == -1) {
-            return
-        }
+        val host = mBinding.etHost.text?.toString()
+        val port = mBinding.etPort.text?.toString()?.toInt()
         nettyClient.connect(host, port)
     }
 
