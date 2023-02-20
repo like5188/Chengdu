@@ -21,7 +21,7 @@ class NettyClient(
     private val reconnectIntervalMillis: Long = 3000,
     val onConnected: (() -> Unit)? = null,
     val onDisConnected: (() -> Unit)? = null,
-    val onMessageReceived: (String) -> Unit
+    val onMessageReceived: (Msg) -> Unit
 ) {
     private lateinit var bootstrap: Bootstrap
     private lateinit var eventLoopGroup: EventLoopGroup
