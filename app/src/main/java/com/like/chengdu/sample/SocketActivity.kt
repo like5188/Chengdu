@@ -59,4 +59,9 @@ class SocketActivity : AppCompatActivity() {
         mBinding.etMsg.setText("")
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        nettyClient.disconnect()
+    }
+
 }

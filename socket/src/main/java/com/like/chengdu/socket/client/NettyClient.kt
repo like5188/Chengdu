@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 class NettyClient(
     private val connectTimeoutMillis: Int = 10000,
     private val reconnectIntervalMillis: Long = 3000,
-    val onConnected: (() -> Unit)? = null,
+    private val onConnected: (() -> Unit)? = null,
     val onDisConnected: (() -> Unit)? = null,
     val onMessageReceived: (Msg) -> Unit
 ) {
