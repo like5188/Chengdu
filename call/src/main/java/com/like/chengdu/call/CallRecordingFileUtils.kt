@@ -107,7 +107,6 @@ class CallRecordingFileUtils {
 class ScanCallRecordingConfig(
     private val filePaths: Array<String>? = null,// 通话录音文件路径。
     private val fileSuffixes: Array<String>? = null,// 通话录音文件后缀。
-    private val modifyTimeError: Long? = null,// 修改时间与扫描文件时间的误差值。毫秒
     private val scanDelay: Long? = null,// 扫描延迟时间。毫秒
 ) {
     fun getFilePaths(): Array<String> = filePaths ?: arrayOf(
@@ -139,8 +138,6 @@ class ScanCallRecordingConfig(
 
     fun getFileSuffixes(): Array<String> =
         fileSuffixes ?: arrayOf(".mp3", ".wav", ".3gp", ".amr", ".3gpp", ".act", ".wma")
-
-    fun getModifyTimeError(): Long = modifyTimeError ?: 5000L
 
     fun getScanDelay(): Long = scanDelay ?: 500L
 
