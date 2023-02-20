@@ -9,7 +9,7 @@ import java.util.*
 /**
  * 音频格式转换工具类
  */
-object AudioConverter {
+internal object AudioConverter {
 
     suspend fun convert(file: File, format: String): File = withContext(Dispatchers.IO) {
         if (!file.exists() || !file.canRead()) {
