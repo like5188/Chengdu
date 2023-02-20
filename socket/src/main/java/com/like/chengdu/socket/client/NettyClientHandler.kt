@@ -34,6 +34,7 @@ class NettyClientHandler(private val nettyClient: NettyClient) : ChannelHandlerA
     //当通道有读取事件时会触发，即服务端发送数据给客户端
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         val str = (msg as ByteBuf).toString(CharsetUtil.UTF_8)
+        // 截取有效数据，避免服务端的smart-socket框架添加了一些协议头在数据前面造成解析失败。
         val jsonStr = str.substring(str.indexOf("{"), str.length)
         println("channelRead $jsonStr")
         val m = mGson.fromJson(jsonStr, Msg::class.java)
