@@ -84,7 +84,7 @@ class CallActivity : AppCompatActivity() {
                             if (call == null) return@launch
 
                             // 获取录音文件
-                            val file = callRecordingFileUtils.stop()
+                            val file = callRecordingFileUtils.getCallRecordingFile()
                             withContext(Dispatchers.Main) {
                                 mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
                             }
@@ -148,6 +148,10 @@ class CallActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
+            withContext(Dispatchers.Main) {
+                mBinding.tvCall.text = ""
+                mBinding.tvCallRecordingFile.text = ""
+            }
             callRecordingFileUtils.start()
             CallUtils.call(this@CallActivity, phone)
         }
@@ -174,9 +178,7 @@ class CallActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         audioUtils.destroy()
-        lifecycleScope.launch {
-            callRecordingFileUtils.stop()
-        }
+        callRecordingFileUtils.destroy()
     }
 
 }

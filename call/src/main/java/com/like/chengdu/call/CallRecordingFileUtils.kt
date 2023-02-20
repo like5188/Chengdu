@@ -3,11 +3,11 @@ package com.like.chengdu.call
 import android.Manifest
 import android.os.Environment
 import android.os.FileObserver
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.util.*
 
@@ -18,6 +18,16 @@ class CallRecordingFileUtils {
     private var callRecordingFile: File? = null
     private lateinit var config: ScanCallRecordingConfig
     private val fileObservers = mutableListOf<FileObserver>()
+
+    @Volatile
+    private var mAction: Int? = null
+
+    private fun stopWatchingExclude(fileObserver: FileObserver) {
+        fileObservers.forEach {
+            if (it != fileObserver)
+                it.stopWatching()
+        }
+    }
 
     @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
     fun init(config: ScanCallRecordingConfig) {
@@ -33,21 +43,28 @@ class CallRecordingFileUtils {
                     override fun onEvent(event: Int, path: String?) {
                         path ?: return
                         val action = event and ALL_EVENTS
-                        if (action != CREATE) return
-                        val file = try {
-                            File(dir, path)
-                        } catch (e: Exception) {
-                            null
-                        } ?: return
-                        println("action:$action file:$file")
-                        if (isValidFile(file) && isValidSuffix(file, config)) {
-                            // 找到录音文件
-                            callRecordingFile = file
-                            // 停止监听
-                            fileObservers.forEach {
-                                it.stopWatching()
+                        if (action == CREATE) {
+                            val file = try {
+                                File(dir, path)
+                            } catch (e: Exception) {
+                                null
                             }
-                            Log.i("TAG", "找到录音文件：${file.absolutePath}")
+                            println("CREATE file:$file")
+                            // 找到录音文件
+                            if (isValidFile(file) && isValidSuffix(file!!, config)) {
+                                stopWatchingExclude(this)// 停止其它监听
+                                mAction = CREATE
+                            }
+                        } else if (action == CLOSE_WRITE) {
+                            if (mAction == CREATE) {
+                                // 停止所有监听
+                                fileObservers.forEach {
+                                    it.stopWatching()
+                                }
+                                callRecordingFile = File(dir, path)
+                                println("CLOSE_WRITE file:$callRecordingFile")
+                                mAction = CLOSE_WRITE
+                            }
                         }
                     }
                 }
@@ -80,23 +97,33 @@ class CallRecordingFileUtils {
     fun start() {
         if (!::config.isInitialized) return
         callRecordingFile = null
+        mAction = null
         fileObservers.forEach {
             it.startWatching()
         }
     }
 
     /**
-     * 停止监听录音文件夹。(挂断电话后或者需要销毁资源时调用)
+     * 停止监听录音文件夹。(销毁资源时调用)
      */
-    suspend fun stop(): File? = withContext(Dispatchers.IO) {
-        if (!::config.isInitialized) return@withContext null
+    fun destroy() {
+        if (!::config.isInitialized) return
         fileObservers.forEach {
             it.stopWatching()
         }
-        val file = callRecordingFile ?: return@withContext null
-        val scanDelay = config.getScanDelay()
-        delay(scanDelay)
-        convertFile(file)
+    }
+
+    /**
+     * 获取录音文件
+     */
+    suspend fun getCallRecordingFile(): File? = withContext(Dispatchers.IO) {
+        if (!::config.isInitialized) return@withContext null
+        withTimeoutOrNull(5000) {
+            while (mAction != FileObserver.CLOSE_WRITE) {
+                delay(100)
+            }
+            convertFile(callRecordingFile)
+        }
     }
 
 }
@@ -107,7 +134,6 @@ class CallRecordingFileUtils {
 class ScanCallRecordingConfig(
     private val filePaths: Array<String>? = null,// 通话录音文件路径。
     private val fileSuffixes: Array<String>? = null,// 通话录音文件后缀。
-    private val scanDelay: Long? = null,// 扫描延迟时间。毫秒
 ) {
     fun getFilePaths(): Array<String> = filePaths ?: arrayOf(
         "/Sounds/CallRecord",
@@ -138,7 +164,5 @@ class ScanCallRecordingConfig(
 
     fun getFileSuffixes(): Array<String> =
         fileSuffixes ?: arrayOf(".mp3", ".wav", ".3gp", ".amr", ".3gpp", ".act", ".wma")
-
-    fun getScanDelay(): Long = scanDelay ?: 500L
 
 }
