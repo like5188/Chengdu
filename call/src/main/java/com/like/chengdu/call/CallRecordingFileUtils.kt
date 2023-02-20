@@ -21,6 +21,7 @@ class CallRecordingFileUtils {
 
     @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
     fun init(config: ScanCallRecordingConfig) {
+        if (::config.isInitialized) return
         callRecordingFile = null
         this.config = config
         val parent = Environment.getExternalStorageDirectory()
@@ -77,6 +78,7 @@ class CallRecordingFileUtils {
      * 开始监听录音文件夹。(拨打电话前调用)
      */
     fun start() {
+        if (!::config.isInitialized) return
         callRecordingFile = null
         fileObservers.forEach {
             it.startWatching()
@@ -84,22 +86,17 @@ class CallRecordingFileUtils {
     }
 
     /**
-     * 停止监听录音文件夹。(挂断电话后调用)
+     * 停止监听录音文件夹。(挂断电话后或者需要销毁资源时调用)
      */
     suspend fun stop(): File? = withContext(Dispatchers.IO) {
-        val currentTimeMillis = System.currentTimeMillis()
+        if (!::config.isInitialized) return@withContext null
         fileObservers.forEach {
             it.stopWatching()
         }
         val file = callRecordingFile ?: return@withContext null
         val scanDelay = config.getScanDelay()
-        val modifyTimeError = config.getModifyTimeError()
         delay(scanDelay)
-        if (currentTimeMillis - file.lastModified() <= modifyTimeError) {
-            convertFile(file)
-        } else {
-            null
-        }
+        convertFile(file)
     }
 
 }

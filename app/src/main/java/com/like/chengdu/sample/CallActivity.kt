@@ -174,6 +174,9 @@ class CallActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         audioUtils.destroy()
+        lifecycleScope.launch {
+            callRecordingFileUtils.stop()
+        }
     }
 
 }
