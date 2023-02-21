@@ -84,7 +84,7 @@ internal class CallRecordingDirObserver(
         val action = event and ALL_EVENTS
         if (action == CREATE) {
             if (callRecordingFile == null) {
-                println("CREATE file:$file")
+                println("找到录音文件:$file")
                 // 找到录音文件
                 if (isValidFile(file) && isValidSuffix(file!!, config)) {
                     callRecordingFile = file
@@ -93,7 +93,7 @@ internal class CallRecordingDirObserver(
             }
         } else if (action == CLOSE_WRITE) {
             if (callRecordingFile == file) {
-                println("CLOSE_WRITE file:$file")
+                println("录音文件写入完毕:$file")
                 mAction = CLOSE_WRITE
             }
         }
