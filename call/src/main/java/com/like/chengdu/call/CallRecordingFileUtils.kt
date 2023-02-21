@@ -16,7 +16,7 @@ import java.util.*
  */
 class CallRecordingFileUtils {
     private var callRecordingFile: File? = null
-    private lateinit var config: ScanCallRecordingConfig
+    private lateinit var mConfig: ScanCallRecordingConfig
     private val fileObservers = mutableListOf<FileObserver>()
 
     @Volatile
@@ -31,9 +31,9 @@ class CallRecordingFileUtils {
 
     @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
     fun init(config: ScanCallRecordingConfig) {
-        if (::config.isInitialized) return
+        if (::mConfig.isInitialized) return
         callRecordingFile = null
-        this.config = config
+        mConfig = config
         val parent = Environment.getExternalStorageDirectory()
         val filePaths = config.getFilePaths()
         filePaths.forEach {
@@ -95,7 +95,7 @@ class CallRecordingFileUtils {
      * 开始监听录音文件夹。(拨打电话前调用)
      */
     fun start() {
-        if (!::config.isInitialized) return
+        if (!::mConfig.isInitialized) return
         callRecordingFile = null
         mAction = null
         fileObservers.forEach {
@@ -107,7 +107,7 @@ class CallRecordingFileUtils {
      * 停止监听录音文件夹。(销毁资源时调用)
      */
     fun destroy() {
-        if (!::config.isInitialized) return
+        if (!::mConfig.isInitialized) return
         fileObservers.forEach {
             it.stopWatching()
         }
@@ -117,7 +117,7 @@ class CallRecordingFileUtils {
      * 获取录音文件
      */
     suspend fun getCallRecordingFile(): File? = withContext(Dispatchers.IO) {
-        if (!::config.isInitialized) return@withContext null
+        if (!::mConfig.isInitialized) return@withContext null
         withTimeoutOrNull(5000) {
             while (mAction != FileObserver.CLOSE_WRITE) {
                 delay(100)
