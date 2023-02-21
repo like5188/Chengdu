@@ -24,9 +24,8 @@ class DBHelper private constructor(context: Context) :
                     "recordingFileUrl VARCHAR," +
                     "dateOfCallConnected INTEGER," +
                     "dateOfCallHungUp INTEGER," +
-                    "reasonOfHungUp VARCHAR," +
-                    "callState VARCHAR," +
-                    "startToFinishTime INTEGER)"
+                    "startToFinishTime INTEGER," +
+                    "reasonOfHungUp VARCHAR)"
         )
     }
 
@@ -41,9 +40,8 @@ class DBHelper private constructor(context: Context) :
         cv.put("recordingFileUrl", call.recordingFileUrl)
         cv.put("dateOfCallConnected", call.dateOfCallConnected)
         cv.put("dateOfCallHungUp", call.dateOfCallHungUp)
-        cv.put("reasonOfHungUp", call.reasonOfHungUp)
-        cv.put("callState", call.callState)
         cv.put("startToFinishTime", call.startToFinishTime)
+        cv.put("reasonOfHungUp", call.reasonOfHungUp)
         writableDatabase.insert("call", null, cv) != -1L
     }
 
@@ -72,9 +70,8 @@ class DBHelper private constructor(context: Context) :
         recordingFileUrl = cursor.getString(6)
         dateOfCallConnected = cursor.getLong(7)
         dateOfCallHungUp = cursor.getLong(8)
-        reasonOfHungUp = cursor.getString(9)
-        callState = cursor.getString(10)
-        startToFinishTime = cursor.getLong(11)
+        startToFinishTime = cursor.getLong(9)
+        reasonOfHungUp = cursor.getString(10)
     }
 
     suspend fun deleteCallById(id: Int) = withContext(Dispatchers.IO) {

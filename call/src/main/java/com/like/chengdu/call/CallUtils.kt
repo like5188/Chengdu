@@ -94,9 +94,20 @@ data class Call(
     var recordingFileUrl: String? = null//录音文件网络地址
     var dateOfCallConnected: Long? = null//接通时间
     var dateOfCallHungUp: Long? = null//结束时间
-    var reasonOfHungUp: String? = null//挂断原因 0: "未知",1: "呼叫失败",2: "我方取消通话",3: "对方挂断",4: "我方挂断",
-    var callState: String? = null//呼叫状态 已接通 未接通
     var startToFinishTime: Long? = null//持续时间 开始拨打到挂断的时间。
+    var reasonOfHungUp: String? = null//挂断原因 0: "未知",1: "呼叫失败",2: "我方取消通话",3: "对方挂断",4: "我方挂断",
+    val callState: String? //呼叫状态 已接通 未接通
+        get() {
+            val dateOfCallConnected = this.dateOfCallConnected
+            val dateOfCallOccurred = this.dateOfCallOccurred
+            return if (dateOfCallConnected != null && dateOfCallConnected > 0) {
+                "已接通"
+            } else if (dateOfCallOccurred != null && dateOfCallOccurred > 0) {
+                "未接通"
+            } else {
+                null
+            }
+        }
 
     companion object {
         fun getProjection() = arrayOf(
@@ -134,9 +145,9 @@ data class Call(
                 "录音文件网络地址=$recordingFileUrl,\n" +
                 "接通时间=${formatTime(dateOfCallConnected)},\n" +
                 "结束时间=${formatTime(dateOfCallHungUp)},\n" +
+                "持续时间=${startToFinishTime} 秒\n" +
                 "挂断原因=$reasonOfHungUp,\n" +
-                "呼叫状态=$callState,\n" +
-                "持续时间=${startToFinishTime} 秒"
+                "呼叫状态=$callState"
     }
 
     fun systemCallToString(): String {
