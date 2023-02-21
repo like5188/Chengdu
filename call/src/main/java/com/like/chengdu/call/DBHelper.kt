@@ -46,9 +46,6 @@ class DBHelper private constructor(context: Context) :
         writableDatabase.insert("call", null, cv) != -1L
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-    }
-
     suspend fun getCalls(): List<Call> = withContext(Dispatchers.IO) {
         val result = mutableListOf<Call>()
         readableDatabase.rawQuery("SELECT * FROM call", arrayOf())?.use {
@@ -56,7 +53,7 @@ class DBHelper private constructor(context: Context) :
                 return@use
             }
             while (!it.isAfterLast) {
-                result.add(Call.parse(it))
+                result.add(Call.parseSystemCall(it))
                 it.moveToNext()
             }
         }
@@ -74,6 +71,9 @@ class DBHelper private constructor(context: Context) :
             values.put(recordingFileUrl, recordingFileUrl)
             writableDatabase.update("call", values, "id=?", arrayOf(id.toString())) > 0
         }
+
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    }
 
     companion object {
         private const val DATABASE_NAME = "call.db"

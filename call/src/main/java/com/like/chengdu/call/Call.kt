@@ -31,7 +31,7 @@ data class Call(
             CallLog.Calls.DURATION
         )
 
-        fun parse(cursor: Cursor): Call {
+        fun parseSystemCall(cursor: Cursor): Call {
             val idColumnIndex = cursor.getColumnIndex(CallLog.Calls._ID)
             val nameColumnIndex = cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)
             val numberColumnIndex = cursor.getColumnIndex(CallLog.Calls.NUMBER)

@@ -3,13 +3,11 @@ package com.like.chengdu.call
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.net.Uri
 import android.provider.CallLog
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
 
 
 /**
@@ -46,7 +44,7 @@ object CallUtils {
                 if (!it.moveToFirst()) {
                     return@use
                 }
-                result = Call.parse(it)
+                result = Call.parseSystemCall(it)
             }
             result
         }
@@ -70,7 +68,7 @@ object CallUtils {
                     return@use
                 }
                 while (!it.isAfterLast && i < num) {
-                    result.add(Call.parse(it))
+                    result.add(Call.parseSystemCall(it))
                     it.moveToNext()
                     i++
                 }
