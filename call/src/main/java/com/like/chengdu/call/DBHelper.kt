@@ -85,7 +85,7 @@ class DBHelper private constructor(context: Context) :
         withContext(Dispatchers.IO) {
             if (recordingFileUrl.isEmpty()) return@withContext false
             val values = ContentValues()
-            values.put(recordingFileUrl, recordingFileUrl)
+            values.put("recordingFileUrl", recordingFileUrl)
             writableDatabase.update("call", values, "id=?", arrayOf(id.toString())) > 0
         }
 

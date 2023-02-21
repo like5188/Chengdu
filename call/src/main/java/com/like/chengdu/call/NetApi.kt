@@ -61,7 +61,7 @@ object NetApi {
         url: String?,
         call: Call?
     ): Boolean {
-        return false// todo 删除假数据
+        return true// todo 删除假数据
         if (url.isNullOrEmpty() || call == null) {
             return false
         }
@@ -92,7 +92,7 @@ object NetApi {
      * @return 文件网络地址
      */
     suspend fun uploadFile(url: String?, file: File?): String? {
-        return null// todo 删除假数据
+        return "http://www.baidu.com/"// todo 删除假数据
         if (url.isNullOrEmpty() || file == null || !file.exists() || file.isDirectory || file.length() <= 0) {
             return null
         }

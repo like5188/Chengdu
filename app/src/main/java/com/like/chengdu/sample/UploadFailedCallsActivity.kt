@@ -39,6 +39,7 @@ class UploadFailedCallsActivity : AppCompatActivity() {
     fun upload(view: View) {
         lifecycleScope.launch {
             UploadUtils.reUploadFail(this@UploadFailedCallsActivity)
+            getUploadFailedCalls(view)
         }
     }
 
