@@ -31,6 +31,7 @@
         </activity>
         <activity android:name=".CallActivity" />
         <activity android:name=".SocketActivity" />
+        <activity android:name=".UploadFailedCallsActivity" />
     </application>
 
 </manifest>

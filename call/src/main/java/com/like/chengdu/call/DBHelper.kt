@@ -8,7 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-internal class DBHelper private constructor(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DBHelper private constructor(context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     override fun onCreate(db: SQLiteDatabase) {
         // 创建通话记录表，此表存储了上传失败的通话记录
         db.execSQL(
@@ -66,12 +67,13 @@ internal class DBHelper private constructor(context: Context) : SQLiteOpenHelper
         writableDatabase.insert("call", null, cv) != -1L
     }
 
-    suspend fun updateCallRecordingFileUrlById(id: Int, recordingFileUrl: String): Boolean = withContext(Dispatchers.IO) {
-        if (recordingFileUrl.isEmpty()) return@withContext false
-        val values = ContentValues()
-        values.put(recordingFileUrl, recordingFileUrl)
-        writableDatabase.update("call", values, "id=?", arrayOf(id.toString())) > 0
-    }
+    suspend fun updateCallRecordingFileUrlById(id: Int, recordingFileUrl: String): Boolean =
+        withContext(Dispatchers.IO) {
+            if (recordingFileUrl.isEmpty()) return@withContext false
+            val values = ContentValues()
+            values.put(recordingFileUrl, recordingFileUrl)
+            writableDatabase.update("call", values, "id=?", arrayOf(id.toString())) > 0
+        }
 
     companion object {
         private const val DATABASE_NAME = "call.db"

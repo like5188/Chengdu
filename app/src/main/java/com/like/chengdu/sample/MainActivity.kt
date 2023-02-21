@@ -25,4 +25,8 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, SocketActivity::class.java))
     }
 
+    fun uploadFailedCalls(view: View) {
+        startActivity(Intent(this, UploadFailedCallsActivity::class.java))
+    }
+
 }

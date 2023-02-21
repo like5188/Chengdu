@@ -3,7 +3,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <Button
@@ -11,8 +11,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
-            android:onClick="testSocket"
-            android:text="socket测试"
+            android:onClick="getUploadFailedCalls"
+            android:text="获取上传失败的通话记录"
             android:textAllCaps="false" />
 
         <Button
@@ -20,18 +20,23 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
-            android:onClick="testCall"
-            android:text="通话测试"
+            android:onClick="upload"
+            android:text="上传"
             android:textAllCaps="false" />
 
-        <Button
+        <EditText
+            android:id="@+id/etMsg"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
-            android:onClick="uploadFailedCalls"
-            android:text="上传失败的通话记录"
-            android:textAllCaps="false" />
+            android:layout_marginBottom="15dp"
+            android:background="#eeeeee"
+            android:editable="false"
+            android:gravity="top"
+            android:padding="5dp"
+            android:scrollbars="vertical"
+            android:textSize="12sp" />
 
     </LinearLayout>
 </layout>
