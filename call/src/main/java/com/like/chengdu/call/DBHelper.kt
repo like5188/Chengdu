@@ -3,79 +3,37 @@ package com.like.chengdu.call
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class DBHelper private constructor(context: Context) :
-    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DBHelper private constructor(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     override fun onCreate(db: SQLiteDatabase) {
         // 创建通话记录表，此表存储了上传失败的通话记录
-        db.execSQL(
-            "CREATE TABLE IF NOT EXISTS call(" +
-                    "id INTEGER PRIMARY KEY," +
-                    "name VARCHAR," +
-                    "number VARCHAR," +
-                    "dateOfCallOccurred INTEGER," +
-                    "duration INTEGER," +
-                    "recordingFile VARCHAR," +
-                    "recordingFileUrl VARCHAR," +
-                    "dateOfCallConnected INTEGER," +
-                    "dateOfCallHungUp INTEGER," +
-                    "startToFinishTime INTEGER," +
-                    "reasonOfHungUp VARCHAR)"
-        )
+        db.execSQL("CREATE TABLE IF NOT EXISTS $LOCAL_CALL_TABLE_NAME(${LocalCall.getCreateDbSql()})")
     }
 
-    suspend fun saveCall(call: Call): Boolean = withContext(Dispatchers.IO) {
-        val cv = ContentValues()
-        cv.put("id", call.id)
-        cv.put("name", call.name)
-        cv.put("number", call.number)
-        cv.put("dateOfCallOccurred", call.dateOfCallOccurred)
-        cv.put("duration", call.duration)
-        cv.put("recordingFile", call.recordingFile)
-        cv.put("recordingFileUrl", call.recordingFileUrl)
-        cv.put("dateOfCallConnected", call.dateOfCallConnected)
-        cv.put("dateOfCallHungUp", call.dateOfCallHungUp)
-        cv.put("startToFinishTime", call.startToFinishTime)
-        cv.put("reasonOfHungUp", call.reasonOfHungUp)
-        writableDatabase.insert("call", null, cv) != -1L
+    suspend fun saveLocalCall(localCall: LocalCall): Boolean = withContext(Dispatchers.IO) {
+        writableDatabase.insert(LOCAL_CALL_TABLE_NAME, null, localCall.getContentValues()) != -1L
     }
 
-    suspend fun getCalls(): List<Call> = withContext(Dispatchers.IO) {
-        val result = mutableListOf<Call>()
-        readableDatabase.rawQuery("SELECT * FROM call", arrayOf())?.use {
+    suspend fun getLocalCalls(): List<LocalCall> = withContext(Dispatchers.IO) {
+        val result = mutableListOf<LocalCall>()
+        readableDatabase.rawQuery("SELECT * FROM $LOCAL_CALL_TABLE_NAME", arrayOf())?.use {
             if (!it.moveToFirst()) {
                 return@use
             }
             while (!it.isAfterLast) {
-                result.add(parseLocalCall(it))
+                result.add(LocalCall.parse(it))
                 it.moveToNext()
             }
         }
         result
     }
 
-    private fun parseLocalCall(cursor: Cursor) = Call(
-        cursor.getInt(0),
-        cursor.getString(1),
-        cursor.getString(2),
-        cursor.getLong(3),
-        cursor.getInt(4)
-    ).apply {
-        recordingFile = cursor.getString(5)
-        recordingFileUrl = cursor.getString(6)
-        dateOfCallConnected = cursor.getLong(7)
-        dateOfCallHungUp = cursor.getLong(8)
-        startToFinishTime = cursor.getLong(9)
-        reasonOfHungUp = cursor.getString(10)
-    }
-
-    suspend fun deleteCallById(id: Int) = withContext(Dispatchers.IO) {
-        writableDatabase.delete("call", "id=?", arrayOf(id.toString()))
+    suspend fun deleteLocalCallById(id: Int) = withContext(Dispatchers.IO) {
+        writableDatabase.delete(LOCAL_CALL_TABLE_NAME, "id=?", arrayOf(id.toString()))
     }
 
     suspend fun updateCallRecordingFileUrlById(id: Int, recordingFileUrl: String): Boolean =
@@ -83,7 +41,7 @@ class DBHelper private constructor(context: Context) :
             if (recordingFileUrl.isEmpty()) return@withContext false
             val values = ContentValues()
             values.put("recordingFileUrl", recordingFileUrl)
-            writableDatabase.update("call", values, "id=?", arrayOf(id.toString())) > 0
+            writableDatabase.update(LOCAL_CALL_TABLE_NAME, values, "id=?", arrayOf(id.toString())) > 0
         }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -91,6 +49,7 @@ class DBHelper private constructor(context: Context) :
 
     companion object {
         private const val DATABASE_NAME = "call.db"
+        private const val LOCAL_CALL_TABLE_NAME = "local_call"
         private const val DATABASE_VERSION = 1
 
         @SuppressLint("StaticFieldLeak")

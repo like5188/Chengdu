@@ -24,12 +24,12 @@ class UploadFailedCallsActivity : AppCompatActivity() {
     fun getUploadFailedCalls(view: View) {
         mBinding.etMsg.setText("")
         lifecycleScope.launch {
-            DBHelper.getInstance(this@UploadFailedCallsActivity)?.getCalls()?.forEach {
+            DBHelper.getInstance(this@UploadFailedCallsActivity)?.getLocalCalls()?.forEach {
                 val oldMsg = mBinding.etMsg.text?.toString()
                 val text = if (oldMsg.isNullOrEmpty()) {
-                    it.localCallToString()
+                    it.toString()
                 } else {
-                    oldMsg + "\n\n" + it.localCallToString()
+                    oldMsg + "\n\n" + it.toString()
                 }
                 mBinding.etMsg.setText(text)
             }

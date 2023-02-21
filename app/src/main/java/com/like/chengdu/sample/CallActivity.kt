@@ -70,23 +70,24 @@ class CallActivity : AppCompatActivity() {
                 },
                 {
                     Logger.e("挂断")
+                    mBinding.tvCall.text = ""
+                    mBinding.tvCallRecordingFile.text = ""
                     val hungUpTime = System.currentTimeMillis()
                     lifecycleScope.launch(Dispatchers.IO) {
                         listenOnceCallLogChange {
                             // 获取通话记录
-                            val call =
-                                CallUtils.getLatestCallByPhoneNumber(this@CallActivity, it)?.apply {
-                                    this.dateOfCallConnected = dateOfCallConnected
-                                    this.dateOfCallHungUp = hungUpTime
-                                    this.dateOfCallOccurred?.let {
-                                        this.startToFinishTime = (hungUpTime - it) / 1000
-                                    }
-                                    dateOfCallConnected = null
+                            val call = CallUtils.getLatestCallByPhoneNumber(this@CallActivity, it) ?: return@listenOnceCallLogChange
+                            val localCall = LocalCall(call).apply {
+                                this.dateOfCallConnected = dateOfCallConnected
+                                this.dateOfCallHungUp = hungUpTime
+                                this.dateOfCallOccurred?.let {
+                                    this.startToFinishTime = (hungUpTime - it) / 1000
                                 }
-                            withContext(Dispatchers.Main) {
-                                mBinding.tvCall.text = call?.localCallToString() ?: ""
+                                dateOfCallConnected = null
                             }
-                            if (call == null) return@listenOnceCallLogChange
+                            withContext(Dispatchers.Main) {
+                                mBinding.tvCall.text = localCall.toString()
+                            }
 
                             // 获取录音文件
                             val files = callRecordingFileUtils.getCallRecordingFile()
@@ -96,7 +97,7 @@ class CallActivity : AppCompatActivity() {
                                 mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
                             }
                             // 上传文件
-                            val uploadResult = UploadUtils.upload(this@CallActivity, call, file)
+                            val uploadResult = UploadUtils.upload(this@CallActivity, localCall, file)
                             withContext(Dispatchers.Main) {
                                 updateCallRecordingFileTextColor(uploadResult.first)
                                 updateCallTextColor(uploadResult.second)
@@ -191,9 +192,9 @@ class CallActivity : AppCompatActivity() {
             CallUtils.getLatestCalls(this@CallActivity, 10).forEach {
                 val oldMsg = mBinding.etMsg.text?.toString()
                 val text = if (oldMsg.isNullOrEmpty()) {
-                    it.systemCallToString()
+                    it.toString()
                 } else {
-                    oldMsg + "\n\n" + it.systemCallToString()
+                    oldMsg + "\n\n" + it.toString()
                 }
                 mBinding.etMsg.setText(text)
             }

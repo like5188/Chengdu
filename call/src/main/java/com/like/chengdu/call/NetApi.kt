@@ -54,22 +54,19 @@ object NetApi {
 
     /**
      * 上传通话记录
-     *
-     * @param call  通话记录
      */
-    suspend fun uploadCall(
+    suspend fun uploadLocalCall(
         url: String?,
-        call: Call?
+        localCall: LocalCall?
     ): Boolean {
         return false// todo 删除假数据
-        if (url.isNullOrEmpty() || call == null) {
+        if (url.isNullOrEmpty() || localCall == null) {
             return false
         }
 
         return withContext(Dispatchers.IO) {
             try {
-                val body =
-                    mGson.toJson(call).toRequestBody("application/json;charset=utf-8".toMediaType())
+                val body = mGson.toJson(localCall).toRequestBody("application/json;charset=utf-8".toMediaType())
                 val request: Request = Request.Builder()
                     .post(body)
                     .url(url)
