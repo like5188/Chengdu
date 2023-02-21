@@ -125,28 +125,37 @@ data class Call(
     }
 
     fun localCallToString(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         return "id=$id,\n" +
                 "联系人=$name,\n" +
                 "被叫号码=$number,\n" +
-                "开始时间=${sdf.format(dateOfCallOccurred)},\n" +
-                "通话时长=${duration}秒,\n" +
+                "开始时间=${formatTime(dateOfCallOccurred)},\n" +
+                "通话时长=${duration} 秒,\n" +
                 "录音文件本地地址=$recordingFile,\n" +
                 "录音文件网络地址=$recordingFileUrl,\n" +
-//                "接通时间=${sdf.format(dateOfCallConnected)},\n" +
-//                "结束时间=${sdf.format(dateOfCallHungUp)},\n" +
+                "接通时间=${formatTime(dateOfCallConnected)},\n" +
+                "结束时间=${formatTime(dateOfCallHungUp)},\n" +
                 "挂断原因=$reasonOfHungUp,\n" +
 //                "呼叫状态=$callState,\n" +
-                "持续时间=${startToFinishTime}秒"
+                "持续时间=${startToFinishTime} 秒"
     }
 
     fun systemCallToString(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         return "id=$id,\n" +
                 "联系人=$name,\n" +
                 "被叫号码=$number,\n" +
-                "开始时间=${sdf.format(dateOfCallOccurred)},\n" +
-                "通话时长=${duration}秒"
+                "开始时间=${formatTime(dateOfCallOccurred)},\n" +
+                "通话时长=${duration} 秒"
+    }
+
+    private fun formatTime(time: Long?): String {
+        if (time == null || time <= 0) {
+            return ""
+        }
+        return try {
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time)
+        } catch (e: Exception) {
+            ""
+        }
     }
 
 }
