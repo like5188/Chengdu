@@ -3,6 +3,7 @@ package com.like.chengdu.call
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import kotlinx.coroutines.Dispatchers
@@ -53,11 +54,27 @@ class DBHelper private constructor(context: Context) :
                 return@use
             }
             while (!it.isAfterLast) {
-                result.add(Call.parseSystemCall(it))
+                result.add(parseLocalCall(it))
                 it.moveToNext()
             }
         }
         result
+    }
+
+    private fun parseLocalCall(cursor: Cursor) = Call(
+        cursor.getInt(0),
+        cursor.getString(1),
+        cursor.getString(2),
+        cursor.getLong(3),
+        cursor.getInt(4)
+    ).apply {
+        recordingFile = cursor.getString(5)
+        recordingFileUrl = cursor.getString(6)
+        dateOfCallConnected = cursor.getLong(7)
+        dateOfCallHungUp = cursor.getLong(8)
+        reasonOfHungUp = cursor.getString(9)
+        callState = cursor.getString(10)
+        startToFinishTime = cursor.getLong(11)
     }
 
     suspend fun deleteCallById(id: Int) = withContext(Dispatchers.IO) {
