@@ -135,7 +135,7 @@ data class Call(
                 "接通时间=${formatTime(dateOfCallConnected)},\n" +
                 "结束时间=${formatTime(dateOfCallHungUp)},\n" +
                 "挂断原因=$reasonOfHungUp,\n" +
-//                "呼叫状态=$callState,\n" +
+                "呼叫状态=$callState,\n" +
                 "持续时间=${startToFinishTime} 秒"
     }
 
