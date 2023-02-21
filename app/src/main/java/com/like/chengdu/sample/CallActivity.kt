@@ -35,6 +35,7 @@ class CallActivity : AppCompatActivity() {
     private val callRecordingFileUtils by lazy {
         CallRecordingFileUtils()
     }
+    private var curLocalCall: LocalCall? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,8 +71,6 @@ class CallActivity : AppCompatActivity() {
                 },
                 {
                     Logger.e("挂断")
-                    mBinding.tvCall.text = ""
-                    mBinding.tvCallRecordingFile.text = ""
                     val hungUpTime = System.currentTimeMillis()
                     lifecycleScope.launch(Dispatchers.IO) {
                         listenOnceCallLogChange {
@@ -85,23 +84,32 @@ class CallActivity : AppCompatActivity() {
                                 }
                                 dateOfCallConnected = null
                             }
-                            withContext(Dispatchers.Main) {
-                                mBinding.tvCall.text = localCall.toString()
-                            }
 
                             // 获取录音文件
                             val files = callRecordingFileUtils.getCallRecordingFile()
                             // 转换成wav格式
                             val file = AudioConverter.convertToWav(files.firstOrNull())
-                            withContext(Dispatchers.Main) {
-                                mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
-                            }
                             // 上传文件
                             val uploadResult = UploadUtils.upload(this@CallActivity, localCall, file)
+                            // 更新ui
                             withContext(Dispatchers.Main) {
-                                updateCallRecordingFileTextColor(uploadResult.first)
-                                updateCallTextColor(uploadResult.second)
+                                mBinding.tvCall.text = localCall.toString()
+                                if (uploadResult.first) {
+                                    mBinding.tvUploadFile.text = "上传录音文件成功"
+                                    mBinding.tvUploadFile.setTextColor(Color.parseColor("#00ff00"))
+                                } else {
+                                    mBinding.tvUploadFile.text = "上传录音文件失败"
+                                    mBinding.tvUploadFile.setTextColor(Color.parseColor("#ff0000"))
+                                }
+                                if (uploadResult.second) {
+                                    mBinding.tvUploadCall.text = "上传通话记录成功"
+                                    mBinding.tvUploadCall.setTextColor(Color.parseColor("#00ff00"))
+                                } else {
+                                    mBinding.tvUploadCall.text = "上传通话记录失败"
+                                    mBinding.tvUploadCall.setTextColor(Color.parseColor("#ff0000"))
+                                }
                             }
+                            curLocalCall = localCall
                         }
                     }
                 }
@@ -131,22 +139,6 @@ class CallActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateCallRecordingFileTextColor(uploadSuccess: Boolean) {
-        if (uploadSuccess) {// 成功
-            mBinding.tvCallRecordingFile.setTextColor(Color.parseColor("#00ff00"))
-        } else {// 失败
-            mBinding.tvCallRecordingFile.setTextColor(Color.parseColor("#ff0000"))
-        }
-    }
-
-    private fun updateCallTextColor(uploadSuccess: Boolean) {
-        if (uploadSuccess) {// 成功
-            mBinding.tvCall.setTextColor(Color.parseColor("#00ff00"))
-        } else {// 失败
-            mBinding.tvCall.setTextColor(Color.parseColor("#ff0000"))
-        }
-    }
-
     fun call(view: View) {
         val phone = mBinding.etPhone.text?.toString()
         if (phone.isNullOrEmpty()) {
@@ -159,27 +151,28 @@ class CallActivity : AppCompatActivity() {
             if (!requestMultiplePermissions) {
                 return@launch
             }
+            curLocalCall = null
             withContext(Dispatchers.Main) {
                 mBinding.tvCall.text = ""
-                mBinding.tvCallRecordingFile.text = ""
             }
             callRecordingFileUtils.startWatching()
             CallUtils.call(this@CallActivity, phone)
         }
     }
 
-    //    private var i = 0
     fun start(view: View) {
-        val filePath = mBinding.tvCallRecordingFile.text?.toString()
+        // 上传成功后就播放网络地址，否则播放本地地址
+        val recordingFileUrl = curLocalCall?.recordingFileUrl
+        val recordingFile = curLocalCall?.recordingFile
+        val filePath = if (!recordingFileUrl.isNullOrEmpty()) {
+            recordingFileUrl
+        } else {
+            recordingFile
+        }
         if (filePath.isNullOrEmpty()) {
             return
         }
         audioUtils.start(filePath)
-//        if (i++ == 0) {
-//            audioUtils.start("http://www.ytmp3.cn/down/57799.mp3")
-//        } else {
-//            audioUtils.start("http://www.ytmp3.cn/down/57790.mp3")
-//        }
     }
 
     fun pause(view: View) {

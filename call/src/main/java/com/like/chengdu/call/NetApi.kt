@@ -89,7 +89,7 @@ object NetApi {
      * @return 文件网络地址
      */
     suspend fun uploadFile(url: String?, file: File?): String? {
-        return null// todo 删除假数据
+        return "http://www.ytmp3.cn/down/57799.mp3"// todo 删除假数据
         if (url.isNullOrEmpty() || file == null || !file.exists() || file.isDirectory || file.length() <= 0) {
             return null
         }
