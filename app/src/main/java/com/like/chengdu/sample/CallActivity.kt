@@ -91,7 +91,7 @@ class CallActivity : AppCompatActivity() {
                             // 获取录音文件
                             val files = callRecordingFileUtils.getCallRecordingFile()
                             // 转换成wav格式
-                            val file = AudioConverter.convertToWav(files.first())
+                            val file = AudioConverter.convertToWav(files.firstOrNull())
                             withContext(Dispatchers.Main) {
                                 mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
                             }
