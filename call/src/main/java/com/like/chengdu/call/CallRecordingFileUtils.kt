@@ -29,40 +29,46 @@ class CallRecordingFileUtils {
         mConfig = config
         val parent = Environment.getExternalStorageDirectory()
         val filePaths = config.getFilePaths()
-        filePaths.forEach {
-            val dir = File(parent, it)
-            if (dir.exists() && dir.isDirectory) {
-                val observer = object : FileObserver(dir) {
-                    override fun onEvent(event: Int, path: String?) {
-                        path ?: return
-                        val action = event and ALL_EVENTS
-                        if (action == CREATE) {
-                            val file = try {
-                                File(dir, path)
-                            } catch (e: Exception) {
-                                null
+        filePaths.filter {// 获取有效文件夹
+            val dir = try {
+                File(parent, it)
+            } catch (e: Exception) {
+                null
+            }
+            dir != null && dir.exists() && dir.isDirectory
+        }.map {
+            File(parent, it)
+        }.forEach { dir ->
+            val observer = object : FileObserver(dir) {
+                override fun onEvent(event: Int, path: String?) {
+                    path ?: return
+                    val action = event and ALL_EVENTS
+                    if (action == CREATE) {
+                        val file = try {
+                            File(dir, path)
+                        } catch (e: Exception) {
+                            null
+                        }
+                        println("CREATE file:$file")
+                        // 找到录音文件
+                        if (isValidFile(file) && isValidSuffix(file!!, config)) {
+                            stopWatchingExclude(this)// 停止其它监听
+                            mAction = CREATE
+                        }
+                    } else if (action == CLOSE_WRITE) {
+                        if (mAction == CREATE) {
+                            // 停止所有监听
+                            fileObservers.forEach {
+                                it.stopWatching()
                             }
-                            println("CREATE file:$file")
-                            // 找到录音文件
-                            if (isValidFile(file) && isValidSuffix(file!!, config)) {
-                                stopWatchingExclude(this)// 停止其它监听
-                                mAction = CREATE
-                            }
-                        } else if (action == CLOSE_WRITE) {
-                            if (mAction == CREATE) {
-                                // 停止所有监听
-                                fileObservers.forEach {
-                                    it.stopWatching()
-                                }
-                                callRecordingFile = File(dir, path)
-                                println("CLOSE_WRITE file:$callRecordingFile")
-                                mAction = CLOSE_WRITE
-                            }
+                            callRecordingFile = File(dir, path)
+                            println("CLOSE_WRITE file:$callRecordingFile")
+                            mAction = CLOSE_WRITE
                         }
                     }
                 }
-                fileObservers.add(observer)
             }
+            fileObservers.add(observer)
         }
     }
 
