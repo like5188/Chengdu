@@ -39,7 +39,8 @@ class CallRecordingFileUtils {
         }.map {
             File(parent, it)
         }.forEach { dir ->
-            val observer = object : FileObserver(dir) {
+            println("监听文件夹：$dir")
+            val observer = object : FileObserver(dir, CREATE or CLOSE_WRITE) {
                 override fun onEvent(event: Int, path: String?) {
                     path ?: return
                     val action = event and ALL_EVENTS
