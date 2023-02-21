@@ -154,6 +154,8 @@ class CallActivity : AppCompatActivity() {
             curLocalCall = null
             withContext(Dispatchers.Main) {
                 mBinding.tvCall.text = ""
+                mBinding.tvUploadCall.text = ""
+                mBinding.tvUploadFile.text = ""
             }
             callRecordingFileUtils.startWatching()
             CallUtils.call(this@CallActivity, phone)
