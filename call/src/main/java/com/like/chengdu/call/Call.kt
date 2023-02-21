@@ -83,12 +83,13 @@ class LocalCall(
 
     val callState: String? //呼叫状态 已接通 未接通
         get() {
-            val dateOfCallConnected = this.dateOfCallConnected
-            val dateOfCallOccurred = this.dateOfCallOccurred
-            return if (dateOfCallConnected != null && dateOfCallConnected > 0) {
-                "已接通"
-            } else if (dateOfCallOccurred != null && dateOfCallOccurred > 0) {
-                "未接通"
+            val duration = this.duration
+            return if (duration != null) {
+                if (duration > 0) {
+                    "已接通"
+                } else {
+                    "未接通"
+                }
             } else {
                 null
             }
