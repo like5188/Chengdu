@@ -95,17 +95,17 @@ class CallActivity : AppCompatActivity() {
                             withContext(Dispatchers.Main) {
                                 mBinding.tvCall.text = localCall.toString()
                                 if (uploadResult.first) {
-                                    mBinding.tvUploadFile.text = "上传录音文件成功"
+                                    mBinding.tvUploadFile.text = "上传录音文件成功!"
                                     mBinding.tvUploadFile.setTextColor(Color.parseColor("#00ff00"))
                                 } else {
-                                    mBinding.tvUploadFile.text = "上传录音文件失败"
+                                    mBinding.tvUploadFile.text = "上传录音文件失败!"
                                     mBinding.tvUploadFile.setTextColor(Color.parseColor("#ff0000"))
                                 }
                                 if (uploadResult.second) {
-                                    mBinding.tvUploadCall.text = "上传通话记录成功"
+                                    mBinding.tvUploadCall.text = "上传通话记录成功!"
                                     mBinding.tvUploadCall.setTextColor(Color.parseColor("#00ff00"))
                                 } else {
-                                    mBinding.tvUploadCall.text = "上传通话记录失败"
+                                    mBinding.tvUploadCall.text = "上传通话记录失败!"
                                     mBinding.tvUploadCall.setTextColor(Color.parseColor("#ff0000"))
                                 }
                             }
