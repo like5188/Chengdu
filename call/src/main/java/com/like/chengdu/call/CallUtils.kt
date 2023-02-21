@@ -30,7 +30,7 @@ object CallUtils {
     }
 
     /**
-     * 获取[phoneNumber]对应的最近的通话记录
+     * 从系统数据库中获取[phoneNumber]对应的最近的通话记录
      */
     @RequiresPermission(allOf = [Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_CALL_LOG])
     suspend fun getLatestCallByPhoneNumber(context: Context, phoneNumber: String): Call? =
@@ -52,7 +52,7 @@ object CallUtils {
         }
 
     /**
-     * 获取[num]条最近的通话记录
+     * 从系统数据库中获取[num]条最近的通话记录
      */
     @RequiresPermission(allOf = [Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_CALL_LOG])
     suspend fun getLatestCalls(context: Context, num: Int): List<Call> =
