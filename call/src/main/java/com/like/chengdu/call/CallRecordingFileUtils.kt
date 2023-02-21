@@ -22,13 +22,6 @@ class CallRecordingFileUtils {
     @Volatile
     private var mAction: Int? = null
 
-    private fun stopWatchingExclude(fileObserver: FileObserver) {
-        fileObservers.forEach {
-            if (it != fileObserver)
-                it.stopWatching()
-        }
-    }
-
     @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
     fun init(config: ScanCallRecordingConfig) {
         if (::mConfig.isInitialized) return
@@ -89,6 +82,13 @@ class CallRecordingFileUtils {
             return@withContext file
         }
         AudioConverter.convert(file, "wav")
+    }
+
+    private fun stopWatchingExclude(fileObserver: FileObserver) {
+        fileObservers.forEach {
+            if (it != fileObserver)
+                it.stopWatching()
+        }
     }
 
     /**
