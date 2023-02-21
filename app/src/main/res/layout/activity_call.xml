@@ -22,7 +22,7 @@
                 android:id="@+id/etPhone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="10000" />
+                android:text="10086" />
         </LinearLayout>
 
         <Button
