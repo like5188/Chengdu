@@ -29,6 +29,23 @@ class DBHelper private constructor(context: Context) :
         )
     }
 
+    suspend fun saveCall(call: Call): Boolean = withContext(Dispatchers.IO) {
+        val cv = ContentValues()
+        cv.put("id", call.id)
+        cv.put("name", call.name)
+        cv.put("number", call.number)
+        cv.put("dateOfCallOccurred", call.dateOfCallOccurred)
+        cv.put("duration", call.duration)
+        cv.put("recordingFile", call.recordingFile)
+        cv.put("recordingFileUrl", call.recordingFileUrl)
+        cv.put("dateOfCallConnected", call.dateOfCallConnected)
+        cv.put("dateOfCallHungUp", call.dateOfCallHungUp)
+        cv.put("reasonOfHungUp", call.reasonOfHungUp)
+        cv.put("callState", call.callState)
+        cv.put("startToFinishTime", call.startToFinishTime)
+        writableDatabase.insert("call", null, cv) != -1L
+    }
+
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
     }
 
@@ -48,23 +65,6 @@ class DBHelper private constructor(context: Context) :
 
     suspend fun deleteCallById(id: Int) = withContext(Dispatchers.IO) {
         writableDatabase.delete("call", "id=?", arrayOf(id.toString()))
-    }
-
-    suspend fun saveCall(call: Call): Boolean = withContext(Dispatchers.IO) {
-        val cv = ContentValues()
-        cv.put("id", call.id)
-        cv.put("name", call.name)
-        cv.put("number", call.number)
-        cv.put("dateOfCallOccurred", call.dateOfCallOccurred)
-        cv.put("duration", call.duration)
-        cv.put("recordingFile", call.recordingFile)
-        cv.put("recordingFileUrl", call.recordingFileUrl)
-        cv.put("dateOfCallConnected", call.dateOfCallConnected)
-        cv.put("dateOfCallHungUp", call.dateOfCallHungUp)
-        cv.put("reasonOfHungUp", call.reasonOfHungUp)
-        cv.put("callState", call.callState)
-        cv.put("startToFinishTime", call.startToFinishTime)
-        writableDatabase.insert("call", null, cv) != -1L
     }
 
     suspend fun updateCallRecordingFileUrlById(id: Int, recordingFileUrl: String): Boolean =
