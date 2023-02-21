@@ -1,13 +1,14 @@
 package com.like.chengdu.call
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.os.Environment
 import android.os.FileObserver
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.withTimeout
 import java.io.File
 import java.util.*
 
@@ -15,18 +16,11 @@ import java.util.*
  * 通话录音文件相关的工具类
  */
 class CallRecordingFileUtils {
-    private var callRecordingFile: File? = null
-    private lateinit var mConfig: ScanCallRecordingConfig
-    private val fileObservers = mutableListOf<FileObserver>()
-
-    @Volatile
-    private var mAction: Int? = null
+    private val fileObservers = mutableListOf<CallRecordingDirObserver>()
 
     @RequiresPermission(allOf = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE])
     fun init(config: ScanCallRecordingConfig) {
-        if (::mConfig.isInitialized) return
-        callRecordingFile = null
-        mConfig = config
+        if (fileObservers.isNotEmpty()) return
         val parent = Environment.getExternalStorageDirectory()
         val filePaths = config.getFilePaths()
         filePaths.filter {// 获取有效文件夹
@@ -40,36 +34,100 @@ class CallRecordingFileUtils {
             File(parent, it)
         }.forEach { dir ->
             println("监听文件夹：$dir")
-            val observer = object : FileObserver(dir, CREATE or CLOSE_WRITE) {
-                override fun onEvent(event: Int, path: String?) {
-                    path ?: return
-                    val action = event and ALL_EVENTS
-                    if (action == CREATE) {
-                        val file = try {
-                            File(dir, path)
-                        } catch (e: Exception) {
-                            null
-                        }
-                        println("CREATE file:$file")
-                        // 找到录音文件
-                        if (isValidFile(file) && isValidSuffix(file!!, config)) {
-                            stopWatchingExclude(this)// 停止其它监听
-                            mAction = CREATE
-                        }
-                    } else if (action == CLOSE_WRITE) {
-                        if (mAction == CREATE) {
-                            // 停止所有监听
-                            fileObservers.forEach {
-                                it.stopWatching()
-                            }
-                            callRecordingFile = File(dir, path)
-                            println("CLOSE_WRITE file:$callRecordingFile")
-                            mAction = CLOSE_WRITE
-                        }
+            fileObservers.add(CallRecordingDirObserver(dir, config))
+        }
+    }
+
+    /**
+     * 开始监听录音文件夹。(拨打电话前调用)
+     */
+    fun startWatching() {
+        fileObservers.forEach {
+            it.startWatching()
+        }
+    }
+
+    /**
+     * 如果有录音文件目录，那么各个录音文件目录下各取一个录音文件
+     */
+    suspend fun getCallRecordingFile(): List<File> {
+        val result = mutableListOf<File>()
+        fileObservers.forEach {
+            val file = it.getCallRecordingFile()
+            if (file != null) {
+                result.add(file)
+            }
+        }
+        return result
+    }
+
+}
+
+@SuppressLint("NewApi")
+internal class CallRecordingDirObserver(
+    private val dir: File,
+    private val config: ScanCallRecordingConfig,
+) : FileObserver(dir, CREATE or CLOSE_WRITE) {
+    private var mAction: Int? = null
+    private var callRecordingFile: File? = null
+
+    override fun onEvent(event: Int, path: String?) {
+        path ?: return
+        val file = try {
+            File(dir, path)
+        } catch (e: Exception) {
+            null
+        }
+        val action = event and ALL_EVENTS
+        if (action == CREATE) {
+            if (callRecordingFile == null) {
+                println("CREATE file:$file")
+                // 找到录音文件
+                if (isValidFile(file) && isValidSuffix(file!!, config)) {
+                    callRecordingFile = file
+                    mAction = CREATE
+                }
+            }
+        } else if (action == CLOSE_WRITE) {
+            if (callRecordingFile == file) {
+                println("CLOSE_WRITE file:$file")
+                mAction = CLOSE_WRITE
+            }
+        }
+    }
+
+    /**
+     * 开始监听录音文件夹。(拨打电话前调用)
+     */
+    override fun startWatching() {
+        mAction = null
+        callRecordingFile = null
+        super.startWatching()
+    }
+
+    override fun stopWatching() {
+        mAction = null
+        callRecordingFile = null
+        super.stopWatching()
+    }
+
+    /**
+     * 获取录音文件，并停止监听目录。5秒未获取到，就返回null
+     */
+    suspend fun getCallRecordingFile(): File? = withContext(Dispatchers.IO) {
+        try {
+            if (callRecordingFile != null) {
+                withTimeout(5000) {
+                    while (mAction != CLOSE_WRITE) {
+                        delay(100)
                     }
                 }
             }
-            fileObservers.add(observer)
+            callRecordingFile
+        } catch (e: Exception) {
+            null
+        } finally {
+            stopWatching()
         }
     }
 
@@ -79,58 +137,6 @@ class CallRecordingFileUtils {
         val fileSuffixes = config.getFileSuffixes()
         val fileName = file.name.lowercase(Locale.getDefault())
         return fileSuffixes.any { fileName.endsWith(it) }
-    }
-
-    private suspend fun convertFile(file: File?): File? = withContext(Dispatchers.IO) {
-        file ?: return@withContext null
-        val extension = file.extension
-        // 录音文件格式作最好都转为：mp3,  wav
-        if (extension == "mp3" || extension == "wav") {
-            return@withContext file
-        }
-        AudioConverter.convert(file, "wav")
-    }
-
-    private fun stopWatchingExclude(fileObserver: FileObserver) {
-        fileObservers.forEach {
-            if (it != fileObserver)
-                it.stopWatching()
-        }
-    }
-
-    /**
-     * 开始监听录音文件夹。(拨打电话前调用)
-     */
-    fun start() {
-        if (!::mConfig.isInitialized) return
-        callRecordingFile = null
-        mAction = null
-        fileObservers.forEach {
-            it.startWatching()
-        }
-    }
-
-    /**
-     * 停止监听录音文件夹。(销毁资源时调用)
-     */
-    fun destroy() {
-        if (!::mConfig.isInitialized) return
-        fileObservers.forEach {
-            it.stopWatching()
-        }
-    }
-
-    /**
-     * 获取录音文件
-     */
-    suspend fun getCallRecordingFile(): File? = withContext(Dispatchers.IO) {
-        if (!::mConfig.isInitialized) return@withContext null
-        withTimeoutOrNull(5000) {
-            while (mAction != FileObserver.CLOSE_WRITE) {
-                delay(100)
-            }
-            convertFile(callRecordingFile)
-        }
     }
 
 }

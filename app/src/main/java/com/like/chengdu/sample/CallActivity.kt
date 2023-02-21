@@ -74,25 +74,28 @@ class CallActivity : AppCompatActivity() {
                     lifecycleScope.launch(Dispatchers.IO) {
                         listenOnceCallLogChange {
                             // 获取通话记录
-                            val call = CallUtils.getLatestCallByPhoneNumber(this@CallActivity, it)?.apply {
-                                this.dateOfCallConnected = dateOfCallConnected
-                                this.dateOfCallHungUp = hungUpTime
-                                this.dateOfCallOccurred?.let {
-                                    this.startToFinishTime = (hungUpTime - it) / 1000
+                            val call =
+                                CallUtils.getLatestCallByPhoneNumber(this@CallActivity, it)?.apply {
+                                    this.dateOfCallConnected = dateOfCallConnected
+                                    this.dateOfCallHungUp = hungUpTime
+                                    this.dateOfCallOccurred?.let {
+                                        this.startToFinishTime = (hungUpTime - it) / 1000
+                                    }
+                                    dateOfCallConnected = null
                                 }
-                                dateOfCallConnected = null
-                            }
                             withContext(Dispatchers.Main) {
                                 mBinding.tvCall.text = call?.localCallToString() ?: ""
                             }
                             if (call == null) return@listenOnceCallLogChange
 
                             // 获取录音文件
-                            val file = callRecordingFileUtils.getCallRecordingFile()
+                            val files = callRecordingFileUtils.getCallRecordingFile()
+                            // 转换成wav格式
+                            val file = AudioConverter.convertToWav(files.first())
                             withContext(Dispatchers.Main) {
                                 mBinding.tvCallRecordingFile.text = file?.absolutePath ?: ""
                             }
-
+                            // 上传文件
                             val uploadResult = UploadUtils.upload(this@CallActivity, call, file)
                             withContext(Dispatchers.Main) {
                                 updateCallRecordingFileTextColor(uploadResult.first)
@@ -159,7 +162,7 @@ class CallActivity : AppCompatActivity() {
                 mBinding.tvCall.text = ""
                 mBinding.tvCallRecordingFile.text = ""
             }
-            callRecordingFileUtils.start()
+            callRecordingFileUtils.startWatching()
             CallUtils.call(this@CallActivity, phone)
         }
     }
@@ -200,7 +203,6 @@ class CallActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         audioUtils.destroy()
-        callRecordingFileUtils.destroy()
     }
 
 }

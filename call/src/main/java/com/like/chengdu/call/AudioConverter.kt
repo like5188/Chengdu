@@ -9,9 +9,18 @@ import java.util.*
 /**
  * 音频格式转换工具类
  */
-internal object AudioConverter {
+object AudioConverter {
+    suspend fun convertToWav(file: File?): File? {
+        file ?: return null
+        val extension = file.extension
+        // 录音文件格式作最好都转为：mp3,  wav
+        if (extension == "mp3" || extension == "wav") {
+            return file
+        }
+        return convert(file, "wav")
+    }
 
-    suspend fun convert(file: File, format: String): File = withContext(Dispatchers.IO) {
+    private suspend fun convert(file: File, format: String): File = withContext(Dispatchers.IO) {
         if (!file.exists() || !file.canRead()) {
             return@withContext file
         }
@@ -27,7 +36,8 @@ internal object AudioConverter {
 
     private fun replaceSuffix(originalFile: File, format: String): File {
         val f = originalFile.path.split(".").toTypedArray()
-        val filePath = originalFile.path.replace(f[f.size - 1], format.lowercase(Locale.getDefault()))
+        val filePath =
+            originalFile.path.replace(f[f.size - 1], format.lowercase(Locale.getDefault()))
         return File(filePath)
     }
 
