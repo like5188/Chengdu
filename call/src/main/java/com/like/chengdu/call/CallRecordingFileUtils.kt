@@ -63,6 +63,9 @@ class CallRecordingFileUtils {
 
 }
 
+/**
+ * 监听可能的录音文件目录
+ */
 @SuppressLint("NewApi")
 internal class CallRecordingDirObserver(
     private val dir: File,
