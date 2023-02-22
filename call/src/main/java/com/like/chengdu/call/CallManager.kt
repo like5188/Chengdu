@@ -6,7 +6,7 @@ import android.database.ContentObserver
 import android.provider.CallLog
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
-import com.like.common.util.activityresultlauncher.requestMultiplePermissions
+import com.like.chengdu.call.activityresultlauncher.requestMultiplePermissions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
