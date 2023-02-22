@@ -109,8 +109,4 @@ class CallManager(
         }
     }
 
-    suspend fun getLatestCalls(num: Int): List<Call> {
-        return CallUtils.getLatestCalls(activity, num)
-    }
-
 }

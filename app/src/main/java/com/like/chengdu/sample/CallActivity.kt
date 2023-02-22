@@ -10,6 +10,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.like.chengdu.call.AudioUtils
 import com.like.chengdu.call.CallManager
+import com.like.chengdu.call.CallUtils
 import com.like.chengdu.call.LocalCall
 import com.like.chengdu.sample.databinding.ActivityCallBinding
 import kotlinx.coroutines.Dispatchers
@@ -86,7 +87,7 @@ class CallActivity : AppCompatActivity() {
     fun getCalls(view: View) {
         mBinding.etMsg.setText("")
         lifecycleScope.launch(Dispatchers.Main) {
-            callManager.getLatestCalls(10).forEach {
+            CallUtils.getLatestCalls(this@CallActivity, 10).forEach {
                 val oldMsg = mBinding.etMsg.text?.toString()
                 val text = if (oldMsg.isNullOrEmpty()) {
                     it.toString()
