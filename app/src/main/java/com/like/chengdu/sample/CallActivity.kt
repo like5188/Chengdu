@@ -62,7 +62,9 @@ class CallActivity : AppCompatActivity() {
         mBinding.tvCall.text = ""
         mBinding.tvUploadCall.text = ""
         mBinding.tvUploadFile.text = ""
-        callManager.call(phone)
+        lifecycleScope.launch {
+            callManager.call(phone)
+        }
     }
 
     fun start(view: View) {

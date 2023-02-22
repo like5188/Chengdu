@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * 打电话，查询通话记录和录音文件并上传
@@ -25,27 +26,39 @@ class CallManager(
     private val callRecordingFileUtils by lazy {
         CallRecordingFileUtils()
     }
+    private val isInit = AtomicBoolean(false)
 
-    init {
-        activity.lifecycleScope.launch {
-            val requestMultiplePermissions = activity.requestMultiplePermissions(
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.PROCESS_OUTGOING_CALLS,
-                Manifest.permission.READ_CALL_LOG,
-                Manifest.permission.WRITE_CALL_LOG,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.CALL_PHONE,
-            ).all { it.value }
-            if (!requestMultiplePermissions) {
-                return@launch
-            }
+    suspend fun call(phone: String?) {
+        if (phone.isNullOrEmpty()) {
+            return
+        }
+        if (!requestMultiplePermissions()) {
+            return
+        }
+        init()
+        callRecordingFileUtils.startWatching()
+        CallUtils.call(activity, phone)
+    }
+
+    private suspend fun init() {
+        if (isInit.compareAndSet(false, true)) {
             NetApi.getScanCallRecordingConfig("http://47.108.214.93/call.json")?.apply {
                 callRecordingFileUtils.init(this)
             }
             listenPhoneState()
         }
     }
+
+    private suspend fun requestMultiplePermissions(): Boolean =
+        activity.requestMultiplePermissions(
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.PROCESS_OUTGOING_CALLS,
+            Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.WRITE_CALL_LOG,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.CALL_PHONE,
+        ).all { it.value }
 
     private suspend fun listenPhoneState() {
         PhoneReceiver.listen(
@@ -99,16 +112,6 @@ class CallManager(
         stateFlow.debounce(500).collectLatest {
             activity.contentResolver.unregisterContentObserver(callLogObserver)
             onChanged.invoke()
-        }
-    }
-
-    fun call(phone: String?) {
-        if (phone.isNullOrEmpty()) {
-            return
-        }
-        activity.lifecycleScope.launch {
-            callRecordingFileUtils.startWatching()
-            CallUtils.call(activity, phone)
         }
     }
 
