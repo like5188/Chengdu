@@ -67,7 +67,7 @@ class PhoneReceiver(
                 }
             } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
                 if (isOffHooked.compareAndSet(false, true)) {
-                    onAnswered.invoke(curPhoneNumber)// 接听
+                    onAnswered.invoke(curPhoneNumber)// 接听(嘟嘟嘟，并不是接通)
                 }
             }
         }

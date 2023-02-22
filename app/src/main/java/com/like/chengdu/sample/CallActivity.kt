@@ -62,12 +62,10 @@ class CallActivity : AppCompatActivity() {
                 return@launch
             }
 
-            var dateOfCallConnected: Long? = null
             PhoneReceiver.listen(
                 this@CallActivity,
                 {
-                    Logger.e("接听")
-                    dateOfCallConnected = System.currentTimeMillis()
+                    Logger.e("开始嘟嘟嘟……")
                 },
                 {
                     Logger.e("挂断")
@@ -75,14 +73,13 @@ class CallActivity : AppCompatActivity() {
                     lifecycleScope.launch(Dispatchers.IO) {
                         listenOnceCallLogChange {
                             // 获取通话记录
-                            val call = CallUtils.getLatestCallByPhoneNumber(this@CallActivity, it) ?: return@listenOnceCallLogChange
+                            val call = CallUtils.getLatestCallByPhoneNumber(this@CallActivity, it)
+                                ?: return@listenOnceCallLogChange
                             val localCall = LocalCall(call).apply {
-                                this.dateOfCallConnected = dateOfCallConnected
                                 this.dateOfCallHungUp = hungUpTime
                                 this.dateOfCallOccurred?.let {
                                     this.startToFinishTime = (hungUpTime - it) / 1000
                                 }
-                                dateOfCallConnected = null
                             }
 
                             // 获取录音文件
@@ -90,7 +87,8 @@ class CallActivity : AppCompatActivity() {
                             // 转换成wav格式
                             val file = AudioConverter.convertToWav(files.firstOrNull())
                             // 上传文件
-                            val uploadResult = UploadUtils.upload(this@CallActivity, localCall, file)
+                            val uploadResult =
+                                UploadUtils.upload(this@CallActivity, localCall, file)
                             // 更新ui
                             withContext(Dispatchers.Main) {
                                 mBinding.tvCall.text = localCall.toString()

@@ -74,12 +74,36 @@ class LocalCall(
     dateOfCallOccurred: Long?,
     duration: Int?
 ) : Call(id, name, number, dateOfCallOccurred, duration) {
-    var recordingFile: String? = null//录音文件本地地址
-    var recordingFileUrl: String? = null//录音文件网络地址
-    var dateOfCallConnected: Long? = null//接通时间
     var dateOfCallHungUp: Long? = null//结束时间
     var startToFinishTime: Long? = null//持续时间 开始拨打到挂断的时间。
-    var reasonOfHungUp: String? = null//挂断原因 0: "未知",1: "呼叫失败",2: "我方取消通话",3: "对方挂断",4: "我方挂断",
+    var recordingFile: String? = null//录音文件本地地址
+    var recordingFileUrl: String? = null//录音文件网络地址
+
+    val reasonOfHungUp: String?
+        //挂断原因 0: "未知",1: "呼叫失败",2: "我方取消通话",3: "对方挂断",4: "我方挂断",
+        get() {
+            val duration = this.duration
+            return if (duration != null) {
+                if (duration > 0) {
+                    "未知"
+                } else {
+                    "呼叫失败"
+                }
+            } else {
+                null
+            }
+        }
+
+    val dateOfCallConnected: Long? //接通时间
+        get() {
+            val duration = this.duration
+            val dateOfCallHungUp = this.dateOfCallHungUp
+            return if (duration != null && duration > 0 && dateOfCallHungUp != null && dateOfCallHungUp > 0) {
+                dateOfCallHungUp - duration
+            } else {
+                null
+            }
+        }
 
     val callState: String? //呼叫状态 已接通 未接通
         get() {
@@ -95,21 +119,27 @@ class LocalCall(
             }
         }
 
-    constructor(call: Call) : this(call.id, call.name, call.number, call.dateOfCallOccurred, call.duration)
+    constructor(call: Call) : this(
+        call.id,
+        call.name,
+        call.number,
+        call.dateOfCallOccurred,
+        call.duration
+    )
 
     override fun toString(): String {
         return "id=$id,\n" +
                 "联系人=$name,\n" +
                 "被叫号码=$number,\n" +
+                "呼叫状态=$callState,\n" +
                 "开始时间=${formatTime(dateOfCallOccurred)},\n" +
-                "通话时长=${duration} 秒,\n" +
-                "录音文件本地地址=$recordingFile,\n" +
-                "录音文件网络地址=$recordingFileUrl,\n" +
                 "接通时间=${formatTime(dateOfCallConnected)},\n" +
                 "结束时间=${formatTime(dateOfCallHungUp)},\n" +
+                "通话时长=${duration} 秒,\n" +
                 "持续时间=${startToFinishTime} 秒\n" +
                 "挂断原因=$reasonOfHungUp,\n" +
-                "呼叫状态=$callState"
+                "录音文件本地地址=$recordingFile,\n" +
+                "录音文件网络地址=$recordingFileUrl"
     }
 
     internal fun getContentValues(): ContentValues = ContentValues().apply {
@@ -118,12 +148,10 @@ class LocalCall(
         put("number", number)
         put("dateOfCallOccurred", dateOfCallOccurred)
         put("duration", duration)
-        put("recordingFile", recordingFile)
-        put("recordingFileUrl", recordingFileUrl)
-        put("dateOfCallConnected", dateOfCallConnected)
         put("dateOfCallHungUp", dateOfCallHungUp)
         put("startToFinishTime", startToFinishTime)
-        put("reasonOfHungUp", reasonOfHungUp)
+        put("recordingFile", recordingFile)
+        put("recordingFileUrl", recordingFileUrl)
     }
 
     companion object {
@@ -133,12 +161,10 @@ class LocalCall(
                     "number VARCHAR," +
                     "dateOfCallOccurred INTEGER," +
                     "duration INTEGER," +
-                    "recordingFile VARCHAR," +
-                    "recordingFileUrl VARCHAR," +
-                    "dateOfCallConnected INTEGER," +
                     "dateOfCallHungUp INTEGER," +
                     "startToFinishTime INTEGER," +
-                    "reasonOfHungUp VARCHAR"
+                    "recordingFile VARCHAR," +
+                    "recordingFileUrl VARCHAR"
         }
 
         internal fun parse(cursor: Cursor) = LocalCall(
@@ -148,12 +174,10 @@ class LocalCall(
             cursor.getLong(3),
             cursor.getInt(4)
         ).apply {
-            recordingFile = cursor.getString(5)
-            recordingFileUrl = cursor.getString(6)
-            dateOfCallConnected = cursor.getLong(7)
-            dateOfCallHungUp = cursor.getLong(8)
-            startToFinishTime = cursor.getLong(9)
-            reasonOfHungUp = cursor.getString(10)
+            dateOfCallHungUp = cursor.getLong(5)
+            startToFinishTime = cursor.getLong(6)
+            recordingFile = cursor.getString(7)
+            recordingFileUrl = cursor.getString(8)
         }
     }
 
