@@ -38,26 +38,10 @@ internal class NettyClientHandler(private val nettyClient: NettyClient) : Channe
         val jsonStr = str.substring(str.indexOf("{"), str.length)
         println("channelRead $jsonStr")
         val m = mGson.fromJson(jsonStr, Msg::class.java)
-        when (m.msgType) {
-            MsgType.HEART -> {// 心跳
-                ctx.writeAndFlush(msg)
-            }
-            MsgType.ONLINE -> {// 上线消息
-
-            }
-            MsgType.OFFLINE -> {// 下线消息
-
-            }
-            MsgType.SYS_NOTICE -> {// 系统通知
-
-            }
-            MsgType.INSIDE_MSG -> {// 站内信
-
-            }
-            MsgType.PHONE -> {// 发起通话
-
-            }
-            else -> {}
+        // 心跳
+        if (m.msgType == MsgType.HEART) {
+            ctx.writeAndFlush(msg)
+            return
         }
         nettyClient.onMessageReceived.invoke(m)
     }

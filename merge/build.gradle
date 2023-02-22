@@ -27,5 +27,12 @@ android {
 }
 
 dependencies {
-
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
+    // coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+    implementation project(':call')
+    implementation project(':h5')
+    implementation project(':socket')
 }
