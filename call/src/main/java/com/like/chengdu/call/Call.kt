@@ -13,7 +13,7 @@ open class Call(
     val name: String?,//联系人
     val number: String?,//被叫号码
     val dateOfCallOccurred: Long?,//开始时间
-    val duration: Int?,//通话时长 接通才有，接通后到挂断的时间。
+    val duration: Int?,//通话时长 接通才有，接通后到挂断的时间。秒
 ) {
 
     private val sdf by lazy {
@@ -75,12 +75,11 @@ class LocalCall(
     duration: Int?
 ) : Call(id, name, number, dateOfCallOccurred, duration) {
     var dateOfCallHungUp: Long? = null//结束时间
-    var startToFinishTime: Long? = null//持续时间 开始拨打到挂断的时间。
     var recordingFile: String? = null//录音文件本地地址
     var recordingFileUrl: String? = null//录音文件网络地址
 
+    //挂断原因 0: "未知",1: "呼叫失败",2: "我方取消通话",3: "对方挂断",4: "我方挂断",
     val reasonOfHungUp: String?
-        //挂断原因 0: "未知",1: "呼叫失败",2: "我方取消通话",3: "对方挂断",4: "我方挂断",
         get() {
             val duration = this.duration
             return if (duration != null) {
@@ -94,18 +93,32 @@ class LocalCall(
             }
         }
 
-    val dateOfCallConnected: Long? //接通时间
+    //持续时间 开始拨打到挂断的时间。秒
+    val startToFinishTime: Long?
         get() {
-            val duration = this.duration
+            val dateOfCallOccurred = this.dateOfCallOccurred
             val dateOfCallHungUp = this.dateOfCallHungUp
-            return if (duration != null && duration > 0 && dateOfCallHungUp != null && dateOfCallHungUp > 0) {
-                dateOfCallHungUp - duration
+            return if (dateOfCallOccurred != null && dateOfCallOccurred > 0 && dateOfCallHungUp != null && dateOfCallHungUp > 0) {
+                (dateOfCallHungUp - dateOfCallOccurred) / 1000
             } else {
                 null
             }
         }
 
-    val callState: String? //呼叫状态 已接通 未接通
+    //接通时间
+    val dateOfCallConnected: Long?
+        get() {
+            val duration = this.duration
+            val dateOfCallHungUp = this.dateOfCallHungUp
+            return if (duration != null && duration > 0 && dateOfCallHungUp != null && dateOfCallHungUp > 0) {
+                dateOfCallHungUp - duration * 1000
+            } else {
+                null
+            }
+        }
+
+    //呼叫状态 已接通 未接通
+    val callState: String?
         get() {
             val duration = this.duration
             return if (duration != null) {
@@ -149,7 +162,6 @@ class LocalCall(
         put("dateOfCallOccurred", dateOfCallOccurred)
         put("duration", duration)
         put("dateOfCallHungUp", dateOfCallHungUp)
-        put("startToFinishTime", startToFinishTime)
         put("recordingFile", recordingFile)
         put("recordingFileUrl", recordingFileUrl)
     }
@@ -162,7 +174,6 @@ class LocalCall(
                     "dateOfCallOccurred INTEGER," +
                     "duration INTEGER," +
                     "dateOfCallHungUp INTEGER," +
-                    "startToFinishTime INTEGER," +
                     "recordingFile VARCHAR," +
                     "recordingFileUrl VARCHAR"
         }
@@ -175,9 +186,8 @@ class LocalCall(
             cursor.getInt(4)
         ).apply {
             dateOfCallHungUp = cursor.getLong(5)
-            startToFinishTime = cursor.getLong(6)
-            recordingFile = cursor.getString(7)
-            recordingFileUrl = cursor.getString(8)
+            recordingFile = cursor.getString(6)
+            recordingFileUrl = cursor.getString(7)
         }
     }
 

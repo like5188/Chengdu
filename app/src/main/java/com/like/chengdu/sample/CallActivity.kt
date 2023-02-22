@@ -77,9 +77,6 @@ class CallActivity : AppCompatActivity() {
                                 ?: return@listenOnceCallLogChange
                             val localCall = LocalCall(call).apply {
                                 this.dateOfCallHungUp = hungUpTime
-                                this.dateOfCallOccurred?.let {
-                                    this.startToFinishTime = (hungUpTime - it) / 1000
-                                }
                             }
 
                             // 获取录音文件
