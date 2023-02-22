@@ -2,11 +2,11 @@ package com.like.chengdu.call
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.database.ContentObserver
 import android.provider.CallLog
-import androidx.activity.ComponentActivity
-import androidx.lifecycle.lifecycleScope
-import com.like.chengdu.call.activityresultlauncher.requestMultiplePermissions
+import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -20,24 +20,33 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 @SuppressLint("MissingPermission")
 class CallManager(
-    private val activity: ComponentActivity,
-    private val uploadResult: (LocalCall, uploadFile: Boolean, uploadLocalCall: Boolean) -> Unit
+    private val context: Context,
+    private val lifecycleScope: CoroutineScope,
+    private val uploadResult: ((LocalCall, uploadFile: Boolean, uploadLocalCall: Boolean) -> Unit)? = null
 ) {
     private val callRecordingFileUtils by lazy {
         CallRecordingFileUtils()
     }
     private val isInit = AtomicBoolean(false)
 
+    @RequiresPermission(
+        allOf = [
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.PROCESS_OUTGOING_CALLS,
+            Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.WRITE_CALL_LOG,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.CALL_PHONE,
+        ]
+    )
     suspend fun call(phone: String?, config: ScanCallRecordingConfig) {
         if (phone.isNullOrEmpty()) {
             return
         }
-        if (!requestMultiplePermissions()) {
-            return
-        }
         init(config)
         callRecordingFileUtils.startWatching()
-        CallUtils.call(activity, phone)
+        CallUtils.call(context, phone)
     }
 
     private suspend fun init(config: ScanCallRecordingConfig) {
@@ -47,30 +56,19 @@ class CallManager(
         }
     }
 
-    private suspend fun requestMultiplePermissions(): Boolean =
-        activity.requestMultiplePermissions(
-            Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.PROCESS_OUTGOING_CALLS,
-            Manifest.permission.READ_CALL_LOG,
-            Manifest.permission.WRITE_CALL_LOG,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.CALL_PHONE,
-        ).all { it.value }
-
     private suspend fun listenPhoneState() {
         PhoneReceiver.listen(
-            activity,
+            context,
             {
                 println("开始嘟嘟嘟……")
             },
             {
                 println("挂断")
                 val hungUpTime = System.currentTimeMillis()
-                activity.lifecycleScope.launch(Dispatchers.IO) {
+                lifecycleScope.launch(Dispatchers.IO) {
                     listenOnceCallLogChange {
                         // 获取通话记录
-                        val call = CallUtils.getLatestCallByPhoneNumber(activity, it)
+                        val call = CallUtils.getLatestCallByPhoneNumber(context, it)
                             ?: return@listenOnceCallLogChange
                         val localCall = LocalCall(call).apply {
                             this.dateOfCallHungUp = hungUpTime
@@ -81,9 +79,9 @@ class CallManager(
                         // 转换成wav格式
                         val file = AudioConverter.convertToWav(files.firstOrNull())
                         // 上传
-                        val uploadResult = UploadUtils.upload(activity, localCall, file)
+                        val uploadResult = UploadUtils.upload(context, localCall, file)
                         withContext(Dispatchers.Main) {
-                            uploadResult(localCall, uploadResult.first, uploadResult.second)
+                            this@CallManager.uploadResult?.invoke(localCall, uploadResult.first, uploadResult.second)
                         }
                     }
                 }
@@ -102,13 +100,13 @@ class CallManager(
                 stateFlow.value = selfChange
             }
         }
-        activity.contentResolver.registerContentObserver(
+        context.contentResolver.registerContentObserver(
             CallLog.Calls.CONTENT_URI,
             true,
             callLogObserver
         )
         stateFlow.debounce(500).collectLatest {
-            activity.contentResolver.unregisterContentObserver(callLogObserver)
+            context.contentResolver.unregisterContentObserver(callLogObserver)
             onChanged.invoke()
         }
     }

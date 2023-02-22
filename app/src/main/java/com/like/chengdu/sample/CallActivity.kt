@@ -1,5 +1,6 @@
 package com.like.chengdu.sample
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
@@ -12,6 +13,7 @@ import com.like.chengdu.call.AudioUtils
 import com.like.chengdu.call.CallManager
 import com.like.chengdu.call.CallUtils
 import com.like.chengdu.call.LocalCall
+import com.like.chengdu.call.activityresultlauncher.requestMultiplePermissions
 import com.like.chengdu.sample.databinding.ActivityCallBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,7 +28,7 @@ class CallActivity : AppCompatActivity() {
     }
     private var curLocalCall: LocalCall? = null
     private val callManager by lazy {
-        CallManager(this) { localCall, uploadFile, uploadLocalCall ->
+        CallManager(this, lifecycleScope) { localCall, uploadFile, uploadLocalCall ->
             curLocalCall = localCall
             // 更新ui
             mBinding.tvCall.text = localCall.toString()
@@ -63,6 +65,18 @@ class CallActivity : AppCompatActivity() {
         mBinding.tvUploadCall.text = ""
         mBinding.tvUploadFile.text = ""
         lifecycleScope.launch {
+            val requestMultiplePermissions = requestMultiplePermissions(
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.PROCESS_OUTGOING_CALLS,
+                Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.WRITE_CALL_LOG,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.CALL_PHONE,
+            ).all { it.value }
+            if (!requestMultiplePermissions) {
+                return@launch
+            }
             callManager.call(phone, MyApplication.config)
         }
     }
