@@ -99,7 +99,8 @@ class LocalCall(
             val dateOfCallOccurred = this.dateOfCallOccurred
             val dateOfCallHungUp = this.dateOfCallHungUp
             return if (dateOfCallOccurred != null && dateOfCallOccurred > 0 && dateOfCallHungUp != null && dateOfCallHungUp > 0) {
-                (dateOfCallHungUp - dateOfCallOccurred) / 1000
+                val diff = dateOfCallHungUp - dateOfCallOccurred
+                diff / 1000 + if (diff % 1000 == 0L) 0 else 1// 向上取整。
             } else {
                 null
             }
