@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * 打电话，查询通话记录和录音文件并上传
+ */
 @SuppressLint("MissingPermission")
 class CallManager(
     private val activity: ComponentActivity,
