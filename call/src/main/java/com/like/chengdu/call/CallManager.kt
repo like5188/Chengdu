@@ -28,23 +28,21 @@ class CallManager(
     }
     private val isInit = AtomicBoolean(false)
 
-    suspend fun call(phone: String?) {
+    suspend fun call(phone: String?, config: ScanCallRecordingConfig) {
         if (phone.isNullOrEmpty()) {
             return
         }
         if (!requestMultiplePermissions()) {
             return
         }
-        init()
+        init(config)
         callRecordingFileUtils.startWatching()
         CallUtils.call(activity, phone)
     }
 
-    private suspend fun init() {
+    private suspend fun init(config: ScanCallRecordingConfig) {
         if (isInit.compareAndSet(false, true)) {
-            NetApi.getScanCallRecordingConfig("http://47.108.214.93/call.json")?.apply {
-                callRecordingFileUtils.init(this)
-            }
+            callRecordingFileUtils.init(config)
             listenPhoneState()
         }
     }
