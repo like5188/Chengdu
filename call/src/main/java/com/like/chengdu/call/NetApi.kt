@@ -59,7 +59,7 @@ object NetApi {
         url: String?,
         localCall: LocalCall?
     ): Boolean {
-        return false// todo 删除假数据
+        return true// todo 删除假数据
         if (url.isNullOrEmpty() || localCall == null) {
             return false
         }

@@ -3,6 +3,7 @@ package com.like.chengdu.call
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.net.Uri
 import android.provider.CallLog
 import androidx.annotation.RequiresPermission
@@ -22,6 +23,7 @@ object CallUtils {
     @RequiresPermission(Manifest.permission.CALL_PHONE)
     fun call(context: Context, phoneNumber: String) {
         Intent(Intent.ACTION_CALL).apply {
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
             data = Uri.parse("tel:$phoneNumber")
             context.startActivity(this)
         }

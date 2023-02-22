@@ -59,4 +59,5 @@ dependencies {
     implementation project(':call')
     implementation project(':h5')
     implementation project(':socket')
+    implementation project(':merge')
 }
