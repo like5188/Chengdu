@@ -27,6 +27,7 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
     // coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
@@ -34,4 +35,5 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.8.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.github.yangfeng1994:FFmpeg-Android:v2.0.1'
+    implementation 'com.github.like5188:Common:7.0.6'
 }
