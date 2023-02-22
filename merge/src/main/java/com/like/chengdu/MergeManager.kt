@@ -7,6 +7,7 @@ import com.like.chengdu.call.*
 import com.like.chengdu.socket.client.MsgType
 import com.like.chengdu.socket.client.NettyClient
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @SuppressLint("MissingPermission")
@@ -21,10 +22,14 @@ class MergeManager(context: Context, lifecycleScope: CoroutineScope, host: Strin
     private val nettyClient by lazy {
         NettyClient(
             onConnected = {
-                Toast.makeText(context, "socket 已连接", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch(Dispatchers.Main) {
+                    Toast.makeText(context, "socket 已连接", Toast.LENGTH_SHORT).show()
+                }
             },
             onDisConnected = {
-                Toast.makeText(context, "socket 未连接", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch(Dispatchers.Main) {
+                    Toast.makeText(context, "socket 未连接", Toast.LENGTH_SHORT).show()
+                }
             }
         ) {
             when (it.msgType) {
