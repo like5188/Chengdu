@@ -13,8 +13,8 @@ import com.like.chengdu.call.AudioUtils
 import com.like.chengdu.call.CallManager
 import com.like.chengdu.call.CallUtils
 import com.like.chengdu.call.LocalCall
-import com.like.chengdu.call.activityresultlauncher.requestMultiplePermissions
 import com.like.chengdu.sample.databinding.ActivityCallBinding
+import com.like.common.util.activityresultlauncher.requestMultiplePermissions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
