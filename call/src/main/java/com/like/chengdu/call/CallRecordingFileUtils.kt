@@ -75,7 +75,7 @@ internal class CallRecordingDirObserver(
     private var callRecordingFile: File? = null
 
     override fun onEvent(event: Int, path: String?) {
-        path ?: return
+        if (path.isNullOrEmpty()) return
         val file = try {
             File(dir, path)
         } catch (e: Exception) {
