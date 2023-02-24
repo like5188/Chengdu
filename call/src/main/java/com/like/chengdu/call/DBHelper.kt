@@ -21,12 +21,8 @@ class DBHelper private constructor(context: Context) : SQLiteOpenHelper(context,
     suspend fun getLocalCalls(): List<LocalCall> = withContext(Dispatchers.IO) {
         val result = mutableListOf<LocalCall>()
         readableDatabase.rawQuery("SELECT * FROM $LOCAL_CALL_TABLE_NAME", arrayOf())?.use {
-            if (!it.moveToFirst()) {
-                return@use
-            }
-            while (!it.isAfterLast) {
+            while (it.moveToNext()) {
                 result.add(LocalCall.parse(it))
-                it.moveToNext()
             }
         }
         result

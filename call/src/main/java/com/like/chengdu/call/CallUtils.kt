@@ -57,7 +57,6 @@ object CallUtils {
     @RequiresPermission(allOf = [Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_CALL_LOG])
     suspend fun getLatestCalls(context: Context, num: Int): List<Call> =
         withContext(Dispatchers.IO) {
-            var i = 0
             val result = mutableListOf<Call>()
             context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -66,13 +65,8 @@ object CallUtils {
                 null,
                 CallLog.Calls.DEFAULT_SORT_ORDER
             )?.use {
-                if (!it.moveToFirst()) {
-                    return@use
-                }
-                while (!it.isAfterLast && i < num) {
+                while (it.moveToNext() && result.size < num) {
                     result.add(Call.parse(it))
-                    it.moveToNext()
-                    i++
                 }
             }
             result
